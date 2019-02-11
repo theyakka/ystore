@@ -15,9 +15,6 @@ import (
 // Store is a giant data map that is constructed from one or more data files
 // that are stored within a directory and series of sub-directories
 type Store struct {
-	// dataDir is the location of all the various data/config files
-	dataDir string
-
 	// data is the primary storage for all the parsed data/config files
 	data map[string]interface{}
 
@@ -33,20 +30,35 @@ type Store struct {
 }
 
 //
-func StoreWithDir(dirPath string) *Store {
+func NewStore() *Store {
 	return &Store{
-		dataDir:           dirPath,
 		data:              map[string]interface{}{},
 		PrefixDirectories: true,
 	}
 }
 
-// ReadAll will parse all data files within the directory and all sub-directories
-func (ds *Store) ReadAll() error {
+func (ds *Store) ReadFile(path string) error {
 	// clear the data map
 	ds.data = map[string]interface{}{}
 	// check to see if the directory exists
-	statInfo, statErr := os.Stat(ds.dataDir)
+	if _, statErr := os.Stat(path); statErr != nil {
+		return statErr
+	}
+	// read the data / config files within the directory
+	dataMap, dataReadErr := ds.readFile(path)
+	if dataReadErr != nil {
+		return dataReadErr
+	}
+	ds.data = dataMap
+	return nil
+}
+
+// ReadAll will parse all data files within the directory and all sub-directories
+func (ds *Store) ReadAll(path string) error {
+	// clear the data map
+	ds.data = map[string]interface{}{}
+	// check to see if the directory exists
+	statInfo, statErr := os.Stat(path)
 	if statErr != nil {
 		return statErr
 	}
@@ -55,7 +67,7 @@ func (ds *Store) ReadAll() error {
 		return errors.New("you must specify a directory")
 	}
 	// read the data / config files within the directory
-	dataMap, dataReadErr := ds.readData(ds.dataDir)
+	dataMap, dataReadErr := ds.readAllFiles(path)
 	if dataReadErr != nil {
 		return dataReadErr
 	}
@@ -63,7 +75,7 @@ func (ds *Store) ReadAll() error {
 	return nil
 }
 
-func (ds *Store) readData(dirPath string) (map[string]interface{}, error) {
+func (ds *Store) readAllFiles(dirPath string) (map[string]interface{}, error) {
 	var fullData = map[string]interface{}{}
 	walkErr := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -73,12 +85,12 @@ func (ds *Store) readData(dirPath string) (map[string]interface{}, error) {
 			// skip directories. the walk function will flatten any sub-directories
 			return nil
 		}
-		fileData, fileErr := ds.dataWalkFunc(dirPath, path, info, err)
+		fileData, fileErr := ds.readFile(path)
 		if fileErr != nil {
 			return fileErr
 		}
 		fileDir := filepath.Dir(path)
-		if fileDir != ds.dataDir && ds.PrefixDirectories {
+		if fileDir != path && ds.PrefixDirectories {
 			// add the prefix to the file data map because it is in a sub-directory
 			mapPrefix := BaseDir(path)
 			fileData = map[string]interface{}{
@@ -95,13 +107,13 @@ func (ds *Store) readData(dirPath string) (map[string]interface{}, error) {
 	return fullData, nil
 }
 
-func (ds *Store) dataWalkFunc(dirPath string, filePath string, info os.FileInfo, err error) (map[string]interface{}, error) {
+func (ds *Store) readFile(filePath string) (map[string]interface{}, error) {
 	data, dataErr := ioutil.ReadFile(filePath)
 	if dataErr != nil {
 		return nil, dataErr
 	}
 	var fileMap map[string]interface{}
-	switch filepath.Ext(info.Name()) {
+	switch filepath.Ext(filePath) {
 	case ".toml":
 		tomlErr := toml.Unmarshal(data, &fileMap)
 		if tomlErr != nil {
