@@ -1,0 +1,4 @@
+[firstdata]
+name="First data test"
+colors=["red", "green", "blue"]
+numbers=[5, 2, 1, 6, 5]
