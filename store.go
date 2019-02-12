@@ -37,15 +37,15 @@ func NewStore() *Store {
 	}
 }
 
-func (ds *Store) ReadFile(path string) error {
+func (ds *Store) ReadFile(filePath string) error {
 	// clear the data map
 	ds.data = map[string]interface{}{}
 	// check to see if the directory exists
-	if _, statErr := os.Stat(path); statErr != nil {
+	if _, statErr := os.Stat(filePath); statErr != nil {
 		return statErr
 	}
 	// read the data / config files within the directory
-	dataMap, dataReadErr := ds.readFile(path)
+	dataMap, dataReadErr := ds.readFile(filePath)
 	if dataReadErr != nil {
 		return dataReadErr
 	}
@@ -53,8 +53,28 @@ func (ds *Store) ReadFile(path string) error {
 	return nil
 }
 
-// ReadAll will parse all data files within the directory and all sub-directories
-func (ds *Store) ReadAll(path string) error {
+func (ds *Store) ReadFiles(filePaths ...string) error {
+	// clear the data map
+	ds.data = map[string]interface{}{}
+	// check to see if the directory exists
+	fullData := map[string]interface{}{}
+	for _, filePath := range filePaths {
+		if _, statErr := os.Stat(filePath); statErr != nil {
+			return statErr
+		}
+		// read the data / config files within the directory
+		fileData, dataReadErr := ds.readFile(filePath)
+		if dataReadErr != nil {
+			return dataReadErr
+		}
+		MergeMaps(fileData, fullData, nil)
+	}
+	ds.data = fullData
+	return nil
+}
+
+// ReadDir will parse all data files within the directory and all sub-directories
+func (ds *Store) ReadDir(path string) error {
 	// clear the data map
 	ds.data = map[string]interface{}{}
 	// check to see if the directory exists
@@ -149,26 +169,62 @@ func (ds Store) Get(key string) interface{} {
 	return val
 }
 
+func (ds Store) GetD(key string, defaultValue interface{}) interface{} {
+	splitKey := strings.Split(key, DataKeySeparator)
+	val := SearchMap(ds.data, splitKey)
+	if val == nil {
+		return defaultValue
+	}
+	return val
+}
+
+
 func (ds Store) GetString(key string) string {
 	return cast.ToString(ds.Get(key))
+}
+
+func (ds Store) GetStringD(key string, defaultValue string) string {
+	return cast.ToString(ds.GetD(key, defaultValue))
 }
 
 func (ds Store) GetBool(key string) bool {
 	return cast.ToBool(ds.Get(key))
 }
 
+func (ds Store) GetBoolD(key string, defaultValue bool) bool {
+	return cast.ToBool(ds.GetD(key, defaultValue))
+}
+
 func (ds Store) GetInt(key string) int {
 	return cast.ToInt(ds.Get(key))
 }
 
+func (ds Store) GetIntD(key string, defaultValue int) int {
+	return cast.ToInt(ds.GetD(key, defaultValue))
+}
+
+
 func (ds Store) GetFloat(key string) float64 {
 	return cast.ToFloat64(ds.Get(key))
+}
+
+func (ds Store) GetFloatD(key string, defaultValue float64) float64 {
+	return cast.ToFloat64(ds.GetD(key, defaultValue))
 }
 
 func (ds Store) GetStringSlice(key string) []string {
 	return cast.ToStringSlice(ds.Get(key))
 }
 
+func (ds Store) GetStringSliceD(key string, defaultValue []string) []string {
+	return cast.ToStringSlice(ds.GetD(key, defaultValue))
+}
+
+
 func (ds Store) GetIntSlice(key string) []int {
 	return cast.ToIntSlice(ds.Get(key))
+}
+
+func (ds Store) GetIntSliceD(key string, defaultValue []int) []int {
+	return cast.ToIntSlice(ds.GetD(key, defaultValue))
 }
