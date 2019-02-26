@@ -3,13 +3,15 @@ package ystore
 import (
 	"encoding/json"
 	"errors"
-	"github.com/BurntSushi/toml"
-	"github.com/spf13/cast"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+
+	"github.com/BurntSushi/toml"
+	"github.com/spf13/cast"
+	"gopkg.in/yaml.v2"
 )
 
 // Store is a giant data map that is constructed from one or more data files
@@ -33,6 +35,14 @@ type Store struct {
 func NewStore() *Store {
 	return &Store{
 		data:              map[string]interface{}{},
+		PrefixDirectories: true,
+	}
+}
+
+//
+func NewStoreFromMap(data map[string]interface{}) *Store {
+	return &Store{
+		data:              data,
 		PrefixDirectories: true,
 	}
 }
@@ -160,6 +170,20 @@ func (ds Store) AllValues() map[string]interface{} {
 	return ds.data
 }
 
+func (ds Store) StoreMatching(pattern string) *Store {
+	matchRegex, compileErr := regexp.Compile(pattern)
+	if compileErr != nil {
+		return nil
+	}
+	matches := map[string]interface{}{}
+	for key, val := range ds.data {
+		if matchRegex.MatchString(key) {
+			matches[key] = val
+		}
+	}
+	return NewStoreFromMap(matches)
+}
+
 func (ds Store) Get(key string) interface{} {
 	splitKey := strings.Split(key, DataKeySeparator)
 	val := SearchMap(ds.data, splitKey)
@@ -177,7 +201,6 @@ func (ds Store) GetD(key string, defaultValue interface{}) interface{} {
 	}
 	return val
 }
-
 
 func (ds Store) GetString(key string) string {
 	return cast.ToString(ds.Get(key))
@@ -203,7 +226,6 @@ func (ds Store) GetIntD(key string, defaultValue int) int {
 	return cast.ToInt(ds.GetD(key, defaultValue))
 }
 
-
 func (ds Store) GetFloat(key string) float64 {
 	return cast.ToFloat64(ds.Get(key))
 }
@@ -219,7 +241,6 @@ func (ds Store) GetStringSlice(key string) []string {
 func (ds Store) GetStringSliceD(key string, defaultValue []string) []string {
 	return cast.ToStringSlice(ds.GetD(key, defaultValue))
 }
-
 
 func (ds Store) GetIntSlice(key string) []int {
 	return cast.ToIntSlice(ds.Get(key))
