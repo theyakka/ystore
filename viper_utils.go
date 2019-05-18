@@ -26,9 +26,10 @@ package ystore
 
 import (
 	"fmt"
-	"github.com/spf13/cast"
 	"reflect"
 	"strings"
+
+	"github.com/spf13/cast"
 )
 
 // MergeMaps merges two maps. The `itgt` parameter is for handling go-yaml's

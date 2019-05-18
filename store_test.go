@@ -6,6 +6,49 @@ import (
 	"testing"
 )
 
+func TestPassingSimpleMap(t *testing.T) {
+	testMap := map[string]interface{}{
+		"first":  "hello",
+		"second": 1234,
+		"third":  12.34,
+		"fourth": []int{1, 2, 3, 4},
+	}
+	testStore := NewStoreFromMap(testMap)
+	if testStore.Len() != len(testMap) {
+		t.Fail()
+	}
+}
+
+func TestPassingNestedMap(t *testing.T) {
+	nestedMap2 := map[string]interface{}{
+		"color1": "red",
+		"color2": "green",
+		"color3": "blue",
+		"color4": "purple",
+	}
+	nestedMap1 := map[string]interface{}{
+		"nested1": "nestedhello",
+		"nested2": 4321,
+		"colors":  nestedMap2,
+	}
+	testMap := map[string]interface{}{
+		"first":  "hello",
+		"second": nestedMap1,
+	}
+	testStore := NewStoreFromMap(testMap)
+	if testStore.Len() != len(testMap) {
+		t.Fail()
+	}
+	substore1 := testStore.Store("second")
+	if substore1.Len() != len(nestedMap1) {
+		t.Fail()
+	}
+	substore2 := testStore.Store("second.colors")
+	if substore2.Len() != len(nestedMap2) {
+		t.Fail()
+	}
+}
+
 func TestFailWhenPassingNonExistentDir(t *testing.T) {
 	baseDir, dirErr := filepath.Abs("./_doesnotexist")
 	if dirErr != nil {
@@ -14,7 +57,7 @@ func TestFailWhenPassingNonExistentDir(t *testing.T) {
 	store := NewStore()
 	storeErr := store.ReadDir(baseDir)
 	if storeErr != nil {
-		return	// should fail
+		return // should fail
 	}
 	t.Error("This should have failed because the directory doesn't exist")
 }
@@ -27,7 +70,7 @@ func TestFailWhenPassingFileToReadAll(t *testing.T) {
 	store := NewStore()
 	storeErr := store.ReadDir(baseDir)
 	if storeErr != nil {
-		return	// should fail
+		return // should fail
 	}
 	t.Error("This should have failed because the directory doesn't exist")
 }
