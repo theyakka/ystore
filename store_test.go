@@ -1,6 +1,7 @@
 package ystore
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 )
@@ -136,4 +137,21 @@ func TestStoreMerging(t *testing.T) {
 	if mergedStore.Len() != 5 {
 		t.Fail()
 	}
+}
+
+func ExampleStore() {
+	store := NewStore()
+	store.Set("color", "red")
+	store.Set("length", 100)
+	fmt.Printf("The item is %s and the length is %d.\n", store.GetString("color"), store.GetInt("length"))
+	// Output: The item is red and the length is 100.
+}
+
+func ExampleStore_newmap() {
+	store := NewStoreFromMap(map[string]interface{}{
+		"color":  "green",
+		"length": 80,
+	})
+	fmt.Printf("The item is %s and the length is %d.\n", store.GetString("color"), store.GetInt("length"))
+	// Output: The item is green and the length is 80.
 }
