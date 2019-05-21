@@ -1,6 +1,6 @@
 <br/>
-<img src="https://storage.googleapis.com/product-logos/logo_ystore.png" width="40" height="40">
-<br/><br/>
+<img src="https://storage.googleapis.com/product-logos/logo_ystore.png" width="70" height="70">
+<br/>
 ystore is an application data management tool. It can be used to parse configuration files or used as a way to import arbitrary data into your application from data files (e.g.: from a CMS or other system).
 
 ## Features
