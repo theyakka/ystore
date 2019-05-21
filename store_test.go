@@ -147,7 +147,7 @@ func ExampleStore() {
 	// Output: The item is red and the length is 100.
 }
 
-func ExampleStore_newmap() {
+func ExampleStore_From_Map() {
 	store := NewStoreFromMap(map[string]interface{}{
 		"color":  "green",
 		"length": 80,
