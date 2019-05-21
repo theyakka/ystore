@@ -14,7 +14,7 @@ The goal of ystore's is to provide flexible access to your data.
 - `Store` splitting and merging
 - conversion from `map` values
 
-## Creating an empty store
+## Memory-based Stores
 
 At it's core, ystore is a simple **key-value** store. You can easily
 create a simple `Store` like so:
@@ -38,6 +38,36 @@ store := NewStoreFromMap(map[string]interface{}{
 fmt.Printf("The item is %s and the length is %d.\n", 
 	store.GetString("color"), store.GetInt("length"))
 // Output: The item is green and the length is 80.
+```
+
+## File-based Stores
+
+Let's assume we have a `.toml` file that looks like this:
+
+```toml
+[item]
+name="First Item"
+colors=["red", "green", "blue"]
+numbers=[5, 2, 1, 6, 5]
+```
+
+We can load the file by creating a `Store` and then using the `ReadFile` function. Note: You will need to pass the absolute file path to `ReadFile`.
+
+```go
+filename, fileErr := filepath.Abs("./config.toml")
+if fileErr != nil {
+	// handle the path error
+	return
+}
+store := NewStore()
+if readErr := store.ReadFile(filename); readErr != nil {
+	// handle store load error
+	return
+}
+name := store.GetString("item.name")
+numbers := store.GetIntSlice("item.numbers")
+fmt.Printf("The item name is '%s' and the numbers slice has %d element(s).\n", name, len(numbers))
+// Output: The item name is 'First Item' and the numbers slice has 5 element(s).
 ```
 
 ## FAQ

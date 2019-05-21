@@ -147,11 +147,28 @@ func ExampleStore() {
 	// Output: The item is red and the length is 100.
 }
 
-func ExampleStore_From_Map() {
+func ExampleStore_map() {
 	store := NewStoreFromMap(map[string]interface{}{
 		"color":  "green",
 		"length": 80,
 	})
 	fmt.Printf("The item is %s and the length is %d.\n", store.GetString("color"), store.GetInt("length"))
 	// Output: The item is green and the length is 80.
+}
+
+func ExampleStore_file() {
+	filename, fileErr := filepath.Abs("./_testdata/first.toml")
+	if fileErr != nil {
+		// handle the path error
+		return
+	}
+	store := NewStore()
+	if readErr := store.ReadFile(filename); readErr != nil {
+		// handle store load error
+		return
+	}
+	name := store.GetString("firstdata.name")
+	numbers := store.GetIntSlice("firstdata.numbers")
+	fmt.Printf("The item name is '%s' and the numbers slice has %d element(s).\n", name, len(numbers))
+	// Output: The item name is 'First Item' and the numbers slice has 5 element(s).
 }
