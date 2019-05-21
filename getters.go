@@ -81,5 +81,5 @@ func (ds Store) GetMap(key string) map[string]interface{} {
 }
 
 func (ds Store) GetMapD(key string, defaultValue map[string]interface{}) map[string]interface{} {
-	return cast.ToStringMap(ds.GetD(key, map[string]interface{}{}))
+	return cast.ToStringMap(ds.GetD(key, defaultValue))
 }

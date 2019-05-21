@@ -193,3 +193,11 @@ func (ds Store) StoreMatching(pattern string) *Store {
 func (ds Store) Len() int {
 	return len(ds.data)
 }
+
+func MergeStores(stores ...*Store) *Store {
+	finalMap := map[string]interface{}{}
+	for _, store := range stores {
+		MergeMaps(store.AllValues(), finalMap, nil)
+	}
+	return NewStoreFromMap(finalMap)
+}

@@ -1,7 +1,6 @@
 package ystore
 
 import (
-	"fmt"
 	"path/filepath"
 	"testing"
 )
@@ -100,7 +99,6 @@ func TestParseSingleFile(t *testing.T) {
 		t.Error(storeErr)
 		return
 	}
-	fmt.Println(store.AllValues())
 }
 
 func TestParseMultipleFiles(t *testing.T) {
@@ -122,6 +120,20 @@ func TestParseMultipleFiles(t *testing.T) {
 		t.Error(storeErr)
 		return
 	}
-	fmt.Println(store.AllValues())
+}
 
+func TestStoreMerging(t *testing.T) {
+	store1 := NewStoreFromMap(map[string]interface{}{
+		"item1": "item 1",
+		"item2": 567,
+		"item3": []string{"string 1", "string 2"},
+	})
+	store2 := NewStoreFromMap(map[string]interface{}{
+		"item4": 234.567,
+		"item5": "item 5",
+	})
+	mergedStore := MergeStores(store1, store2)
+	if mergedStore.Len() != 5 {
+		t.Fail()
+	}
 }
