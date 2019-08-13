@@ -56,6 +56,14 @@ func (ds Store) GetFloatD(key string, defaultValue float64) float64 {
 	return cast.ToFloat64(ds.GetD(key, defaultValue))
 }
 
+func (ds Store) GetSlice(key string) []interface{} {
+	return cast.ToSlice(ds.Get(key))
+}
+
+func (ds Store) GetSliceD(key string, defaultValue []interface{}) []interface{} {
+	return cast.ToSlice(ds.GetD(key, defaultValue))
+}
+
 func (ds Store) GetStringSlice(key string) []string {
 	return cast.ToStringSlice(ds.Get(key))
 }
