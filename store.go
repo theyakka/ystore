@@ -3,6 +3,7 @@ package ystore
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -145,23 +146,23 @@ func (ds *Store) readFile(filePath string) (map[string]interface{}, error) {
 	case ".toml":
 		tomlErr := toml.Unmarshal(data, &fileMap)
 		if tomlErr != nil {
-			break
+			return nil, tomlErr
 		}
 		return fileMap, nil
 	case ".yaml":
 		yamlErr := yaml.Unmarshal(data, &fileMap)
 		if yamlErr != nil {
-			break
+			return nil, yamlErr
 		}
 		return fileMap, nil
 	case ".json":
 		jsonErr := json.Unmarshal(data, &fileMap)
 		if jsonErr != nil {
-			break
+			return nil, jsonErr
 		}
 		return fileMap, nil
 	}
-	return nil, nil
+	return nil, errors.New(fmt.Sprintf("file type (%s) is unsupported", filepath.Ext(filePath)))
 }
 
 func (ds Store) AllValues() map[string]interface{} {

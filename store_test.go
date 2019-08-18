@@ -1,6 +1,7 @@
 package ystore
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"testing"
@@ -102,6 +103,27 @@ func TestParseSingleFile(t *testing.T) {
 	}
 }
 
+func TestParseSingleBadYamlFile(t *testing.T) {
+	filename, dirErr := filepath.Abs("./_badtestdata/bad.yaml")
+	if dirErr != nil {
+		t.Error(dirErr)
+		return
+	}
+	store := NewStore()
+	if storeErr := store.ReadFile(filename); storeErr == nil {
+		t.Error(errors.New("file is bad and should have failed"))
+		return
+	}
+}
+
+func TestParseNonExistingFile(t *testing.T) {
+	store := NewStore()
+	if storeErr := store.ReadFile("./_badtestdata/nonexistent.yaml"); storeErr == nil {
+		t.Error(errors.New("file is non-existent and should have failed"))
+		return
+	}
+}
+
 func TestParseMultipleFiles(t *testing.T) {
 	var originalFilenames = []string{
 		"./_testdata/first.toml",
@@ -133,7 +155,7 @@ func TestStoreMerging(t *testing.T) {
 		"item4": 234.567,
 		"item5": "item 5",
 	})
-	mergedStore := MergeStores(store1, store2)
+	mergedStore := MergeStores(*store1, *store2)
 	if mergedStore.Len() != 5 {
 		t.Fail()
 	}
