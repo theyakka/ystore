@@ -46,6 +46,19 @@ func NewStoreFromMap(data map[string]interface{}) *Store {
 	}
 }
 
+func NewStoreFromMapWithSubs(data map[string]interface{}) *Store {
+	store := NewStore()
+	for k, v := range data {
+		switch v.(type) {
+		case map[string]interface{}:
+			store.Set(k, NewStoreFromMap(v.(map[string]interface{})))
+		default:
+			store.Set(k, v)
+		}
+	}
+	return store
+}
+
 func (ds *Store) ReadFile(filePath string) error {
 	// clear the data map
 	ds.data = map[string]interface{}{}

@@ -123,6 +123,10 @@ func SearchMap(source map[string]interface{}, path []string) interface{} {
 			// Type assertion is safe here since it is only reached
 			// if the type of `next` is the same as the type being asserted
 			return SearchMap(next.(map[string]interface{}), path[1:])
+		case Store:
+			return next.(Store).Get(strings.Join(path[1:], "."))
+		case *Store:
+			return next.(*Store).Get(strings.Join(path[1:], "."))
 		default:
 			// got a value but nested key expected, return "nil" for not found
 			return nil

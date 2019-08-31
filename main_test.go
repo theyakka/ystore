@@ -1,4 +1,4 @@
-package ystore
+package ystore_test
 
 import (
 	"os"

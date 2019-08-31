@@ -1,14 +1,16 @@
-package ystore
+package ystore_test
 
 import (
 	"errors"
 	"fmt"
 	"path/filepath"
 	"testing"
+
+	"github.com/theyakka/ystore"
 )
 
 func TestStoreOrEmpty(t *testing.T) {
-	store := NewStore()
+	store := ystore.NewStore()
 	store.Set("substore", map[string]interface{}{
 		"first":  "hello",
 		"second": 1234,
@@ -44,7 +46,7 @@ func TestPassingSimpleMap(t *testing.T) {
 		"third":  12.34,
 		"fourth": []int{1, 2, 3, 4},
 	}
-	testStore := NewStoreFromMap(testMap)
+	testStore := ystore.NewStoreFromMap(testMap)
 	if testStore.Len() != len(testMap) {
 		t.Fail()
 	}
@@ -66,7 +68,7 @@ func TestPassingNestedMap(t *testing.T) {
 		"first":  "hello",
 		"second": nestedMap1,
 	}
-	testStore := NewStoreFromMap(testMap)
+	testStore := ystore.NewStoreFromMap(testMap)
 	if testStore.Len() != len(testMap) {
 		t.Fail()
 	}
@@ -85,7 +87,7 @@ func TestFailWhenPassingNonExistentDir(t *testing.T) {
 	if dirErr != nil {
 		t.Error(dirErr)
 	}
-	store := NewStore()
+	store := ystore.NewStore()
 	storeErr := store.ReadDir(baseDir)
 	if storeErr != nil {
 		return // should fail
@@ -98,7 +100,7 @@ func TestFailWhenPassingFileToReadAll(t *testing.T) {
 	if dirErr != nil {
 		t.Error(dirErr)
 	}
-	store := NewStore()
+	store := ystore.NewStore()
 	storeErr := store.ReadDir(baseDir)
 	if storeErr != nil {
 		return // should fail
@@ -112,7 +114,7 @@ func TestParseAllInDirectory(t *testing.T) {
 		t.Error(dirErr)
 		return
 	}
-	store := NewStore()
+	store := ystore.NewStore()
 	storeErr := store.ReadDir(baseDir)
 	if storeErr != nil {
 		t.Error(storeErr)
@@ -126,7 +128,7 @@ func TestParseSingleFile(t *testing.T) {
 		t.Error(dirErr)
 		return
 	}
-	store := NewStore()
+	store := ystore.NewStore()
 	if storeErr := store.ReadFile(filename); storeErr != nil {
 		t.Error(storeErr)
 		return
@@ -139,7 +141,7 @@ func TestParseSingleBadYamlFile(t *testing.T) {
 		t.Error(dirErr)
 		return
 	}
-	store := NewStore()
+	store := ystore.NewStore()
 	if storeErr := store.ReadFile(filename); storeErr == nil {
 		t.Error(errors.New("file is bad and should have failed"))
 		return
@@ -147,7 +149,7 @@ func TestParseSingleBadYamlFile(t *testing.T) {
 }
 
 func TestParseNonExistingFile(t *testing.T) {
-	store := NewStore()
+	store := ystore.NewStore()
 	if storeErr := store.ReadFile("./_badtestdata/nonexistent.yaml"); storeErr == nil {
 		t.Error(errors.New("file is non-existent and should have failed"))
 		return
@@ -168,7 +170,7 @@ func TestParseMultipleFiles(t *testing.T) {
 		}
 		filenames = append(filenames, absFilename)
 	}
-	store := NewStore()
+	store := ystore.NewStore()
 	if storeErr := store.ReadFiles(filenames...); storeErr != nil {
 		t.Error(storeErr)
 		return
@@ -176,23 +178,23 @@ func TestParseMultipleFiles(t *testing.T) {
 }
 
 func TestStoreMerging(t *testing.T) {
-	store1 := NewStoreFromMap(map[string]interface{}{
+	store1 := ystore.NewStoreFromMap(map[string]interface{}{
 		"item1": "item 1",
 		"item2": 567,
 		"item3": []string{"string 1", "string 2"},
 	})
-	store2 := NewStoreFromMap(map[string]interface{}{
+	store2 := ystore.NewStoreFromMap(map[string]interface{}{
 		"item4": 234.567,
 		"item5": "item 5",
 	})
-	mergedStore := MergeStores(*store1, *store2)
+	mergedStore := ystore.MergeStores(*store1, *store2)
 	if mergedStore.Len() != 5 {
 		t.Fail()
 	}
 }
 
 func ExampleStore() {
-	store := NewStore()
+	store := ystore.NewStore()
 	store.Set("color", "red")
 	store.Set("length", 100)
 	fmt.Printf("The item is %s and the length is %d.\n", store.GetString("color"), store.GetInt("length"))
@@ -200,7 +202,7 @@ func ExampleStore() {
 }
 
 func ExampleStore_map() {
-	store := NewStoreFromMap(map[string]interface{}{
+	store := ystore.NewStoreFromMap(map[string]interface{}{
 		"color":  "green",
 		"length": 80,
 	})
@@ -214,7 +216,7 @@ func ExampleStore_file() {
 		// handle the path error
 		return
 	}
-	store := NewStore()
+	store := ystore.NewStore()
 	if readErr := store.ReadFile(filename); readErr != nil {
 		// handle store load error
 		return

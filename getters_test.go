@@ -1,11 +1,13 @@
-package ystore
+package ystore_test
 
 import (
 	"log"
 	"testing"
+
+	"github.com/theyakka/ystore"
 )
 
-var gettersStore *Store
+var gettersStore *ystore.Store
 
 const testInt = 1234
 const testFloat = 98.7654
@@ -23,7 +25,7 @@ var testMapValue = map[string]interface{}{
 }
 
 func setupGetters() {
-	gettersStore = NewStore()
+	gettersStore = ystore.NewStore()
 	gettersStore.Set("some.nested.value", "turkey")
 	gettersStore.Set("i.am.testing.this", "hello")
 	gettersStore.Set("stringSlice", testStringSlice)
