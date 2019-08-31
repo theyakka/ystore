@@ -177,6 +177,14 @@ func (ds Store) Store(key string) *Store {
 	return NewStoreFromMap(value)
 }
 
+func (ds Store) StoreOrEmpty(key string) *Store {
+	value := ds.GetMap(key)
+	if value == nil {
+		return NewStore()
+	}
+	return NewStoreFromMap(value)
+}
+
 func (ds Store) StoreMatching(pattern string) *Store {
 	matchRegex, compileErr := regexp.Compile(pattern)
 	if compileErr != nil {

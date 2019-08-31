@@ -7,6 +7,36 @@ import (
 	"testing"
 )
 
+func TestStoreOrEmpty(t *testing.T) {
+	store := NewStore()
+	store.Set("substore", map[string]interface{}{
+		"first":  "hello",
+		"second": 1234,
+		"third":  12.34,
+		"fourth": []int{1, 2, 3, 4},
+	})
+	store.Set("simple", 55)
+	substore := store.StoreOrEmpty("nonexisting")
+	if substore == nil {
+		t.Error("substore should not be nil")
+		return
+	}
+	substore = store.Store("somethingnothere")
+	if substore != nil {
+		t.Error("substore should be nil")
+		return
+	}
+	substore = store.StoreOrEmpty("simple")
+	if substore == nil {
+		t.Error("substore should not be nil")
+		return
+	}
+	if substore.Len() > 0 {
+		t.Error("store should be empty")
+		return
+	}
+}
+
 func TestPassingSimpleMap(t *testing.T) {
 	testMap := map[string]interface{}{
 		"first":  "hello",
