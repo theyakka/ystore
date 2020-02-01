@@ -75,7 +75,7 @@ func TestGetBool(t *testing.T) {
 }
 
 func TestNonExistentSubStore(t *testing.T) {
-	substore := gettersStore.Store("missing")
+	substore := gettersStore.StoreFromMap("missing")
 	if substore != nil {
 		t.Fail()
 	}

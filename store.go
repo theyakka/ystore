@@ -182,7 +182,7 @@ func (ds Store) AllValues() map[string]interface{} {
 	return ds.data
 }
 
-func (ds Store) Store(key string) *Store {
+func (ds Store) StoreFromMap(key string) *Store {
 	value := ds.GetMap(key)
 	if value == nil {
 		return nil
@@ -190,7 +190,7 @@ func (ds Store) Store(key string) *Store {
 	return NewStoreFromMap(value)
 }
 
-func (ds Store) StoreOrEmpty(key string) *Store {
+func (ds Store) StoreFromMapOrEmpty(key string) *Store {
 	value := ds.GetMap(key)
 	if value == nil {
 		return NewStore()

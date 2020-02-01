@@ -18,17 +18,17 @@ func TestStoreOrEmpty(t *testing.T) {
 		"fourth": []int{1, 2, 3, 4},
 	})
 	store.Set("simple", 55)
-	substore := store.StoreOrEmpty("nonexisting")
+	substore := store.StoreFromMapOrEmpty("nonexisting")
 	if substore == nil {
 		t.Error("substore should not be nil")
 		return
 	}
-	substore = store.Store("somethingnothere")
+	substore = store.StoreFromMap("somethingnothere")
 	if substore != nil {
 		t.Error("substore should be nil")
 		return
 	}
-	substore = store.StoreOrEmpty("simple")
+	substore = store.StoreFromMapOrEmpty("simple")
 	if substore == nil {
 		t.Error("substore should not be nil")
 		return
@@ -72,11 +72,11 @@ func TestPassingNestedMap(t *testing.T) {
 	if testStore.Len() != len(testMap) {
 		t.Fail()
 	}
-	substore1 := testStore.Store("second")
+	substore1 := testStore.StoreFromMapOrEmpty("second")
 	if substore1.Len() != len(nestedMap1) {
 		t.Fail()
 	}
-	substore2 := testStore.Store("second.colors")
+	substore2 := testStore.StoreFromMapOrEmpty("second.colors")
 	if substore2.Len() != len(nestedMap2) {
 		t.Fail()
 	}

@@ -91,3 +91,19 @@ func (ds Store) GetMap(key string) map[string]interface{} {
 func (ds Store) GetMapD(key string, defaultValue map[string]interface{}) map[string]interface{} {
 	return cast.ToStringMap(ds.GetD(key, defaultValue))
 }
+
+func (ds Store) GetStore(key string) *Store {
+	return ds.GetStoreD(key, nil)
+}
+
+func (ds Store) GetStoreD(key string, defaultValue *Store) *Store {
+	foundStore := ds.Get(key)
+	if foundStore == nil {
+		return defaultValue
+	}
+	if store, ok := foundStore.(*Store); ok {
+		return store
+	}
+	return defaultValue
+}
+
