@@ -16,7 +16,9 @@ func (ds *Store) Process(processor ProcessElementFunc) *Store {
 	ds.Each(func(k string, v interface{}) {
 		switch v.(type) {
 		case Store:
-			processedStore.Set(k, v.(Store).Process(processor))
+			store := v.(Store)
+			sp := &store
+			processedStore.Set(k, sp.Process(processor))
 		case *Store:
 			processedStore.Set(k, v.(*Store).Process(processor))
 		default:
