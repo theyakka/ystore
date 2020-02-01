@@ -1,3 +1,9 @@
+// Created by Yakka (https://theyakka.com)
+//
+// Copyright (c) 2020 Yakka LLC.
+// All rights reserved.
+// See the LICENSE file for licensing details and requirements.
+
 package ystore
 
 import (
@@ -178,11 +184,11 @@ func (ds *Store) readFile(filePath string) (map[string]interface{}, error) {
 	return nil, errors.New(fmt.Sprintf("file type (%s) is unsupported", filepath.Ext(filePath)))
 }
 
-func (ds Store) AllValues() map[string]interface{} {
+func (ds *Store) AllValues() map[string]interface{} {
 	return ds.data
 }
 
-func (ds Store) StoreFromMap(key string) *Store {
+func (ds *Store) StoreFromMap(key string) *Store {
 	value := ds.GetMap(key)
 	if value == nil {
 		return nil
@@ -190,7 +196,7 @@ func (ds Store) StoreFromMap(key string) *Store {
 	return NewStoreFromMap(value)
 }
 
-func (ds Store) StoreFromMapOrEmpty(key string) *Store {
+func (ds *Store) StoreFromMapOrEmpty(key string) *Store {
 	value := ds.GetMap(key)
 	if value == nil {
 		return NewStore()
@@ -198,7 +204,7 @@ func (ds Store) StoreFromMapOrEmpty(key string) *Store {
 	return NewStoreFromMap(value)
 }
 
-func (ds Store) StoreMatching(pattern string) *Store {
+func (ds *Store) StoreMatching(pattern string) *Store {
 	matchRegex, compileErr := regexp.Compile(pattern)
 	if compileErr != nil {
 		return nil
@@ -212,7 +218,7 @@ func (ds Store) StoreMatching(pattern string) *Store {
 	return NewStoreFromMap(matches)
 }
 
-func (ds Store) Len() int {
+func (ds *Store) Len() int {
 	return len(ds.data)
 }
 
