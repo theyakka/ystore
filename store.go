@@ -229,3 +229,11 @@ func MergeStores(stores ...Store) *Store {
 	}
 	return NewStoreFromMap(finalMap)
 }
+
+func (ds *Store) ToJSONString() string  {
+	jsonString, jsonErr := json.Marshal(ds.data)
+	if jsonErr != nil {
+		return ""
+	}
+	return string(jsonString)
+}
