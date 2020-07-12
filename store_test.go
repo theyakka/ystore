@@ -58,6 +58,21 @@ func TestPassingSimpleMap(t *testing.T) {
 	}
 }
 
+func BenchmarkPassingSimpleMap(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		testMap := map[string]interface{}{
+			"first":  "hello",
+			"second": 1234,
+			"third":  12.34,
+			"fourth": []int{1, 2, 3, 4},
+		}
+		ystore.NewStoreFromMap(testMap)
+	}
+}
+
+
 func TestPassingNestedMap(t *testing.T) {
 	nestedMap2 := map[string]interface{}{
 		"color1": "red",
@@ -193,11 +208,46 @@ func TestStoreMerging(t *testing.T) {
 		"item4": 234.567,
 		"item5": "item 5",
 	})
-	mergedStore := ystore.MergeStores(*store1, *store2)
+	mergedStore := ystore.MergeStores(store1, store2)
+	if store1.Len() != 3 {
+		t.Fail()
+		return
+	}
+	if store2.Len() != 2 {
+		t.Fail()
+		return
+	}
 	if mergedStore.Len() != 5 {
 		t.Fail()
+		return
 	}
 }
+
+func TestStoreInstanceMerging(t *testing.T) {
+	store1 := ystore.NewStoreFromMap(map[string]interface{}{
+		"item1": "item 1",
+		"item2": 567,
+		"item3": []string{"string 1", "string 2"},
+	})
+	store2 := ystore.NewStoreFromMap(map[string]interface{}{
+		"item4": 234.567,
+		"item5": "item 5",
+	})
+	mergedStore := store1.MergeWith(store2)
+	if store1.Len() != 3 {
+		t.Fail()
+		return
+	}
+	if store2.Len() != 2 {
+		t.Fail()
+		return
+	}
+	if mergedStore.Len() != 5 {
+		t.Fail()
+		return
+	}
+}
+
 
 func ExampleStore() {
 	store := ystore.NewStore()

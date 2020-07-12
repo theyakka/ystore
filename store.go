@@ -222,7 +222,11 @@ func (ds *Store) Len() int {
 	return len(ds.data)
 }
 
-func MergeStores(stores ...Store) *Store {
+func (ds *Store) MergeWith(stores ...*Store) *Store {
+	return MergeStores(append(stores, ds)...)
+}
+
+func MergeStores(stores ...*Store) *Store {
 	finalMap := map[string]interface{}{}
 	for _, store := range stores {
 		MergeMaps(store.AllValues(), finalMap, nil)

@@ -40,9 +40,18 @@ func setupGetters() {
 	gettersStore.Set("intSlice", testIntSlice)
 	gettersStore.Set("float", testFloat)
 	gettersStore.Set("map", testMapValue)
+	gettersStore.Set("simplestr", "this is a test string")
 }
 
-func TestGetStrings(t *testing.T) {
+func BenchmarkGetString(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		gettersStore.GetString("simplestr")
+	}
+}
+
+func TestGetString(t *testing.T) {
 	testValue := gettersStore.GetString("some.nested.value")
 	if testValue != "turkey" {
 		t.Fail()
@@ -79,6 +88,15 @@ func TestGetBool(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func BenchmarkGetBool(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		gettersStore.GetString("boolean")
+	}
+}
+
 
 func TestNonExistentSubStore(t *testing.T) {
 	substore := gettersStore.StoreFromMap("missing")
