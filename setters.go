@@ -6,7 +6,10 @@
 
 package ystore
 
-import "strings"
+import (
+	"github.com/spf13/cast"
+	"strings"
+)
 
 func (ds *Store) Set(key string, value interface{}) {
 	splitKey := strings.Split(key, DataKeySeparator)
@@ -21,4 +24,20 @@ func (ds *Store) Set(key string, value interface{}) {
 		}
 	}
 	ds.data[splitKey[0]] = mapValue
+}
+
+func (ds *Store) SetAsString(key string, value interface{}) {
+	splitKey := strings.Split(key, DataKeySeparator)
+	if len(splitKey) == 1 {
+		ds.data[key] = cast.ToString(value)
+		return
+	}
+	var mapValue map[string]interface{}
+	for i := len(splitKey) - 1; i > 0; i-- {
+		mapValue = map[string]interface{}{
+			splitKey[i]: cast.ToString(value),
+		}
+	}
+	ds.data[splitKey[0]] = mapValue
+
 }

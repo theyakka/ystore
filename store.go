@@ -44,6 +44,23 @@ func NewStore() *Store {
 	}
 }
 
+func NewStoreWithData(data interface{}) *Store {
+	if mapData, ok := data.(map[string]interface{}); ok {
+		return NewStoreFromMap(mapData)
+	}
+	store := NewStore()
+	if mapData, ok := data.(map[interface{}]interface{}); ok {
+		for k, v := range mapData {
+			strKey, ok := k.(string)
+			if !ok {
+				continue
+			}
+			store.Set(strKey, v)
+		}
+	}
+	return store
+}
+
 //
 func NewStoreFromMap(data map[string]interface{}) *Store {
 	return &Store{
