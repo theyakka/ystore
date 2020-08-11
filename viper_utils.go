@@ -124,7 +124,8 @@ func SearchMap(source map[string]interface{}, path []string) interface{} {
 			// if the type of `next` is the same as the type being asserted
 			return SearchMap(next.(map[string]interface{}), path[1:])
 		case Store:
-			return next.(Store).Get(strings.Join(path[1:], "."))
+			store := next.(Store)
+			return store.Get(strings.Join(path[1:], "."))
 		case *Store:
 			return next.(*Store).Get(strings.Join(path[1:], "."))
 		default:
