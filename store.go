@@ -186,6 +186,8 @@ func (ds *Store) readFile(filePath string) (map[string]interface{}, error) {
 		}
 		return fileMap, nil
 	case ".yaml":
+		fallthrough
+	case ".yml":
 		yamlErr := yaml.Unmarshal(data, &fileMap)
 		if yamlErr != nil {
 			return nil, yamlErr
