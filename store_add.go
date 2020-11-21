@@ -8,14 +8,17 @@ import (
 )
 
 func (ds *Store) AddData(data interface{}) {
+}
+
+func (ds *Store) addDataElement(key string, data interface{}) interface{} {
 	v := reflect.ValueOf(data)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
 	if v.Kind() == reflect.Map {
-		for _, kv := range v.MapKeys() {
-			key := kv.String()
-			if key != "" {
-				ds.Set(key, v.MapIndex(kv).Interface())
-			}
-		}
+		ds.Set(key, ds.addMapElement(v))
+	} else if v.Kind() == reflect.Slice {
+		ds.Set(key, ds.addSliceElement(v))
 	} else if v.Kind() == reflect.Struct {
 		vType := v.Type()
 		fieldCount := v.NumField()
@@ -32,6 +35,26 @@ func (ds *Store) AddData(data interface{}) {
 				ds.Set(fi.Name, v.Field(i).Interface())
 			}
 		}
+	} else {
+		ds.Set(key, data)
+	}
+}
+
+func (ds *Store) addMapElement(value reflect.Value) interface{} {
+	mapToAdd := map[string]interface{}{}
+	for _, kv := range value.MapKeys() {
+		key := kv.String()
+		if key != "" {
+			mapToAdd[key] = value.MapIndex(kv).Interface()
+		}
+	}
+	return mapToAdd
+}
+
+func (ds *Store) addSliceElement(value reflect.Value) []interface{} {
+	var sliceToAdd []interface{}
+	for i := 0; i < value.Len(); i++ {
+		sliceToAdd = append(sliceToAdd, ds.addDataElement("", value.Index(i).Interface()))
 	}
 }
 

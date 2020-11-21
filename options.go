@@ -19,7 +19,7 @@ type StoreOptions struct {
 	exclusions []string
 }
 
-func NewOptions(options ...StoreOption) StoreOptions {
+func NewStoreOptions(options ...StoreOption) StoreOptions {
 	// create a new options struct with the default values preset
 	o := StoreOptions{
 		prefixDirectories: true,

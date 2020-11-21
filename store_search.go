@@ -5,34 +5,45 @@ import (
 	"strings"
 )
 
-const SearchPathDelimiter = "."
-
 type SearchOption func(options *SearchOptions)
 
 type SearchOptions struct {
 	searchStructs bool
 }
 
-func SearchStore(store *Store, keyPath string, options SearchOptions) interface{} {
+func NewSearchOptions() SearchOptions {
+	return SearchOptions{
+		searchStructs: true,
+	}
+}
+
+func (ds *Store) Search(keyPath string, options ...SearchOption) interface{} {
+	return SearchStore(ds, keyPath, options...)
+}
+
+func SearchStore(store *Store, keyPath string, options ...SearchOption) interface{} {
 	if keyPath == "" {
 		return nil
 	}
-	splitPath := strings.Split(keyPath, SearchPathDelimiter)
+	splitPath := strings.Split(keyPath, DataKeySeparator)
 	if len(splitPath) == 1 {
-		return store.Get(splitPath[0])
+		return store.data[keyPath]
 	}
-	return searchPaths(store.data, splitPath, options)
+	return searchPaths(store.data, splitPath, NewSearchOptions())
 }
 
 func searchPaths(source interface{}, paths []string, options SearchOptions) interface{} {
 	if len(paths) == 0 || source == nil {
 		return source // done
 	}
-
 	switch source.(type) {
-
+	case Store:
+		store := source.(Store)
+		return searchPaths(store.data, paths[1:], options)
+	case *Store:
+		store := source.(*Store)
+		return searchPaths(store.data, paths[1:], options)
 	}
-
 	v := reflect.ValueOf(source)
 	if v.Kind() == reflect.Map {
 		mapVal := v.MapIndex(reflect.ValueOf(paths[0]))
@@ -47,5 +58,5 @@ func searchPaths(source interface{}, paths []string, options SearchOptions) inte
 		}
 		return searchPaths(field.Interface(), paths[1:], options)
 	}
-
+	return nil
 }

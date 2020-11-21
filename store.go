@@ -16,18 +16,18 @@ type Store struct {
 }
 
 //
-func NewStore(options StoreOptions) *Store {
+func NewStore(options ...StoreOption) *Store {
 	return &Store{
 		data:    map[string]interface{}{},
-		options: options,
+		options: NewStoreOptions(options...),
 	}
 }
 
 // NewStoreFromFile will create a new store and then add the contents of the file to the store.
 // If an error occurs while loading/parsing the file, then the error will be ignored and an
 // empty store will be returned.
-func NewStoreFromFile(filename string, options StoreOptions) *Store {
-	store := NewStore(options)
+func NewStoreFromFile(filename string, options ...StoreOption) *Store {
+	store := NewStore(options...)
 	_ = store.AddFile(filename)
 	return store
 }

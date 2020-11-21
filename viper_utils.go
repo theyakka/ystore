@@ -28,8 +28,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
-	"github.com/spf13/cast"
 )
 
 // MergeMaps merges two maps. The `itgt` parameter is for handling go-yaml's
@@ -103,34 +101,34 @@ func castToMapStringInterface(
 // SearchMap recursively searches for a value for path in source map.
 // Returns nil if not found.
 // Note: This assumes that the path entries and map keys are lower cased.
-func SearchMap(source map[string]interface{}, path []string) interface{} {
-	if len(path) == 0 {
-		return source
-	}
-
-	next, ok := source[path[0]]
-	if ok {
-		// Fast path
-		if len(path) == 1 {
-			return next
-		}
-
-		// Nested case
-		switch next.(type) {
-		case map[interface{}]interface{}:
-			return SearchMap(cast.ToStringMap(next), path[1:])
-		case map[string]interface{}:
-			// Type assertion is safe here since it is only reached
-			// if the type of `next` is the same as the type being asserted
-			return SearchMap(next.(map[string]interface{}), path[1:])
-		case Store:
-			return next.(Store).Get(strings.Join(path[1:], "."))
-		case *Store:
-			return next.(*Store).Get(strings.Join(path[1:], "."))
-		default:
-			// got a value but nested key expected, return "nil" for not found
-			return nil
-		}
-	}
-	return nil
-}
+//func SearchMap(source map[string]interface{}, path []string) interface{} {
+//	if len(path) == 0 {
+//		return source
+//	}
+//
+//	next, ok := source[path[0]]
+//	if ok {
+//		// Fast path
+//		if len(path) == 1 {
+//			return next
+//		}
+//
+//		// Nested case
+//		switch next.(type) {
+//		case map[interface{}]interface{}:
+//			return SearchMap(cast.ToStringMap(next), path[1:])
+//		case map[string]interface{}:
+//			// Type assertion is safe here since it is only reached
+//			// if the type of `next` is the same as the type being asserted
+//			return SearchMap(next.(map[string]interface{}), path[1:])
+//		case Store:
+//			return next.(Store).Get(strings.Join(path[1:], "."))
+//		case *Store:
+//			return next.(*Store).Get(strings.Join(path[1:], "."))
+//		default:
+//			// got a value but nested key expected, return "nil" for not found
+//			return nil
+//		}
+//	}
+//	return nil
+//}
