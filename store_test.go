@@ -282,3 +282,20 @@ func ExampleStore_file() {
 	fmt.Printf("The item name is '%s' and the numbers slice has %d element(s).\n", name, len(numbers))
 	// Output: The item name is 'First Item' and the numbers slice has 5 element(s).
 }
+
+func BenchmarkMergeStores(b *testing.B) {
+	store1 := ystore.NewStoreFromMap(map[string]interface{}{
+		"item1": "item 1",
+		"item2": 567,
+		"item3": []string{"string 1", "string 2"},
+	})
+	store2 := ystore.NewStoreFromMap(map[string]interface{}{
+		"item4": 234.567,
+		"item5": "item 5",
+	})
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		store1.MergeWith(store2)
+	}
+}
