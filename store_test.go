@@ -15,7 +15,11 @@ import (
 func TestAddStructs(t *testing.T) {
 	store := ystore.NewStore()
 	person := makePerson()
-	store.AddData(person)
+	err := store.AddData(person)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	jj := store.Get("past_jobs")
 	log.Println(jj)
 	jobObj := store.GetIndexed("past_jobs", 1)

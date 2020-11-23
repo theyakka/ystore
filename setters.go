@@ -17,13 +17,11 @@ func (ds *Store) Set(key string, value interface{}) {
 		ds.data[key] = value
 		return
 	}
-	mapValue := value
-	for i := len(splitKey) - 1; i > 0; i-- {
-		mapValue = map[string]interface{}{
-			splitKey[i]: mapValue,
-		}
+	valMap := ds.GetMapD(splitKey[0], map[string]interface{}{})
+	for i := 1; i < len(splitKey)-1; i++ {
+
 	}
-	ds.data[splitKey[0]] = mapValue
+	ds.data[splitKey[0]] = valMap
 }
 
 func (ds *Store) SetAsString(key string, value interface{}) {

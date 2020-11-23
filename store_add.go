@@ -2,61 +2,78 @@ package ystore
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"reflect"
 	"strings"
 )
 
-func (ds *Store) AddData(data interface{}) {
-}
-
-func (ds *Store) addDataElement(key string, data interface{}) interface{} {
+func (ds *Store) AddData(data interface{}) error {
 	v := reflect.ValueOf(data)
+	// if the data is a pointer, get the actual element and work from that
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
-	if v.Kind() == reflect.Map {
-		ds.Set(key, ds.addMapElement(v))
-	} else if v.Kind() == reflect.Slice {
-		ds.Set(key, ds.addSliceElement(v))
-	} else if v.Kind() == reflect.Struct {
-		vType := v.Type()
-		fieldCount := v.NumField()
-		if fieldCount == 0 {
-			return
-		}
-		for i := 0; i < fieldCount; i++ {
-			fi := vType.Field(i)
-			if tag := fi.Tag.Get("ystore"); tag != "" {
-				splitTag := strings.Split(tag, ",")
-				// TODO - tag options
-				ds.Set(splitTag[0], v.Field(i).Interface())
-			} else {
-				ds.Set(fi.Name, v.Field(i).Interface())
-			}
-		}
+	if v.Kind() != reflect.Map && v.Kind() != reflect.Struct {
+		return errors.New("this operation only supports maps and struct")
+	}
+	ds.addDataElement(data, "")
+	return nil
+}
+
+func (ds *Store) addDataElement(data interface{}, keyPath string) {
+	v := reflect.ValueOf(data)
+	// if the data is a pointer, get the actual element and work from that
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	if v.Kind() == reflect.Struct {
+		ds.addStructElement(v, keyPath)
 	} else {
-		ds.Set(key, data)
+		// at this point, we have a raw data element or it's a data element that
+		// we aren't going to be processing any further so we just return it and
+		// allow it to be assigned another way
+		ds.Set(keyPath, data)
 	}
 }
 
-func (ds *Store) addMapElement(value reflect.Value) interface{} {
-	mapToAdd := map[string]interface{}{}
-	for _, kv := range value.MapKeys() {
-		key := kv.String()
-		if key != "" {
-			mapToAdd[key] = value.MapIndex(kv).Interface()
+func (ds *Store) addStructElement(value reflect.Value, keyPath string) {
+	vType := value.Type()
+	fieldCount := value.NumField()
+	if fieldCount == 0 {
+		return
+	}
+	for i := 0; i < fieldCount; i++ {
+		fi := vType.Field(i)
+		key := fi.Name
+		if tag := fi.Tag.Get("ystore"); tag != "" {
+			splitTag := strings.Split(tag, ",")
+			// TODO - tag options
+			key = splitTag[0]
 		}
+		if keyPath != "" {
+			key = fmt.Sprintf("%s.%s", keyPath, key)
+		}
+		ds.addDataElement(value.Field(i).Interface(), key)
 	}
-	return mapToAdd
 }
 
-func (ds *Store) addSliceElement(value reflect.Value) []interface{} {
-	var sliceToAdd []interface{}
-	for i := 0; i < value.Len(); i++ {
-		sliceToAdd = append(sliceToAdd, ds.addDataElement("", value.Index(i).Interface()))
-	}
-}
+//func (ds *Store) addMapElement(value reflect.Value, keyPath string) {
+//	for _, kv := range value.MapKeys() {
+//		key := kv.String()
+//		if key != "" {
+//			ds.addDataElement(value.MapIndex(kv).Interface(), key)
+//		}
+//	}
+//}
+
+//func (ds *Store) addSliceElement(value reflect.Value) []interface{} {
+//	var sliceToAdd []interface{}
+//	for i := 0; i < value.Len(); i++ {
+//		sliceToAdd = append(sliceToAdd, ds.addDataElement("", value.Index(i).Interface()))
+//	}
+//}
 
 func (ds *Store) AddFile(filePath string) error {
 	// check to see if the directory exists
