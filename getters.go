@@ -90,15 +90,20 @@ func (ds *Store) GetMapD(key string, defaultValue map[string]interface{}) map[st
 	return cast.ToStringMap(ds.GetD(key, defaultValue))
 }
 
-func (ds *Store) GetIndexed(key string, index int) interface{} {
-	return ds.GetIndexedD(key, index, nil)
+func (ds *Store) GetIndexed(key string, index int, itemKey string) interface{} {
+	return ds.GetIndexedD(key, index, itemKey, nil)
 }
 
-func (ds *Store) GetIndexedD(key string, index int, defaultValue interface{}) interface{} {
+func (ds *Store) GetIndexedD(key string, index int, itemKey string, defaultValue interface{}) interface{} {
 	// TODO - tidy
 	val := ds.GetSlice(key)
 	if val != nil {
-		return val[index]
+		if itemKey == "" {
+			return val[index]
+		}
+		store := NewStore()
+		store.AddData(val[index], nil)
+		return store.Get(itemKey)
 	}
 	return defaultValue
 }

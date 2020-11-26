@@ -52,14 +52,17 @@ func WithExclusions(exclusions ...string) StoreOption {
 type MergeOption func(options *MergeOptions)
 
 type MergeOptions struct {
-	// overwriteOnly will force the merge to skip trying to merge multi-value values that are contained in
-	// the store
-	overwriteOnly bool
+	// overwrite will overwrite any existing value
+	overwrite bool
+
+	// appendSlices will append the values for any slices vs overwriting them
+	appendSlices bool
 }
 
 func NewMergeOptions(options ...MergeOption) MergeOptions {
 	mergeOptions := MergeOptions{
-		overwriteOnly: false,
+		overwrite:    true,
+		appendSlices: true,
 	}
 	for _, of := range options {
 		of(&mergeOptions)
@@ -73,9 +76,15 @@ func WithMergeOptions(options MergeOptions) MergeOption {
 	}
 }
 
-func WithOverwriteOnly(flag bool) MergeOption {
+func WithOverwriteFlag(flag bool) MergeOption {
 	return func(options *MergeOptions) {
-		options.overwriteOnly = flag
+		options.overwrite = flag
+	}
+}
+
+func WithAppendSlicesFlag(flag bool) MergeOption {
+	return func(options *MergeOptions) {
+		options.appendSlices = flag
 	}
 }
 
@@ -85,5 +94,6 @@ func copyOptions(from, to *StoreOptions) {
 }
 
 func copyMergeOptions(from, to *MergeOptions) {
-	to.overwriteOnly = from.overwriteOnly
+	to.overwrite = from.overwrite
+	to.appendSlices = from.appendSlices
 }

@@ -2,13 +2,12 @@ package ystore
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"reflect"
 	"strings"
 )
 
-func (ds *Store) AddData(data interface{}) error {
+func (ds *Store) AddData(data interface{}, options *MergeOptions) error {
 	v := reflect.ValueOf(data)
 	// if the data is a pointer, get the actual element and work from that
 	if v.Kind() == reflect.Ptr {
@@ -17,46 +16,74 @@ func (ds *Store) AddData(data interface{}) error {
 	if v.Kind() != reflect.Map && v.Kind() != reflect.Struct {
 		return errors.New("this operation only supports maps and struct")
 	}
-	ds.addDataElement(data, "")
+	ds.merge(ds.data, v, options)
 	return nil
 }
 
-func (ds *Store) addDataElement(data interface{}, keyPath string) {
-	v := reflect.ValueOf(data)
-	// if the data is a pointer, get the actual element and work from that
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-
-	if v.Kind() == reflect.Struct {
-		ds.addStructElement(v, keyPath)
+func (ds *Store) merge(destination map[string]interface{}, source reflect.Value, options *MergeOptions) {
+	if source.Kind() == reflect.Struct {
+		ds.mergeStruct(destination, source, options)
 	} else {
 		// at this point, we have a raw data element or it's a data element that
 		// we aren't going to be processing any further so we just return it and
 		// allow it to be assigned another way
-		ds.Set(keyPath, data)
 	}
 }
 
-func (ds *Store) addStructElement(value reflect.Value, keyPath string) {
-	vType := value.Type()
-	fieldCount := value.NumField()
+func (ds *Store) mergeStruct(destination map[string]interface{}, source reflect.Value, options *MergeOptions) {
+	vType := source.Type()
+	fieldCount := source.NumField()
 	if fieldCount == 0 {
 		return
 	}
 	for i := 0; i < fieldCount; i++ {
 		fi := vType.Field(i)
 		key := fi.Name
-		if tag := fi.Tag.Get("ystore"); tag != "" {
+		if fi.Anonymous || !isExportedField(key) {
+			continue
+		}
+		if tag := fi.Tag.Get(TagPrefix); tag != "" {
 			splitTag := strings.Split(tag, ",")
 			// TODO - tag options
 			key = splitTag[0]
 		}
-		if keyPath != "" {
-			key = fmt.Sprintf("%s.%s", keyPath, key)
+		if fi.Type.Kind() == reflect.Struct {
+			structMap := map[string]interface{}{}
+			ds.mergeStruct(structMap, source.Field(i), options)
+			destination[key] = structMap
+		} else if fi.Type.Kind() == reflect.Slice {
+			var slice []interface{}
+			ds.mergeSlice(&slice, source.Field(i), options)
+			destination[key] = slice
+		} else {
+			destination[key] = source.Field(i).Interface()
 		}
-		ds.addDataElement(value.Field(i).Interface(), key)
 	}
+}
+
+func (ds *Store) mergeSlice(destination *[]interface{}, source reflect.Value, options *MergeOptions) {
+	for i := 0; i < source.Len(); i++ {
+		iv := source.Index(i)
+		if iv.Kind() == reflect.Struct {
+			structMap := map[string]interface{}{}
+			ds.mergeStruct(structMap, iv, options)
+			*destination = append(*destination, structMap)
+		} else if iv.Kind() == reflect.Slice {
+			var slice []interface{}
+			ds.mergeSlice(&slice, iv, options)
+			*destination = append(*destination, slice)
+		} else {
+			*destination = append(*destination, iv.Interface())
+		}
+	}
+}
+
+func isExportedField(name string) bool {
+	first := name[0]
+	if 'a' <= first && first <= 'z' || first == '_' {
+		return false
+	}
+	return true
 }
 
 //func (ds *Store) addMapElement(value reflect.Value, keyPath string) {
@@ -130,5 +157,5 @@ func (ds *Store) AddStores(stores ...*Store) {
 	for _, store := range stores {
 		MergeMaps(store.AllValues(), finalMap, nil)
 	}
-	ds.AddData(finalMap)
+	ds.AddData(finalMap, nil)
 }
