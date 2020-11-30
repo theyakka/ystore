@@ -20,11 +20,33 @@ func TestAddStructs(t *testing.T) {
 		log.Println(err)
 		return
 	}
-	jj := store.Get("current_job.company")
-	log.Println(jj)
-	jobObj := store.GetIndexed("past_jobs", 1, "company")
-	if jobObj != nil {
+	var xx string
+	qerr := store.NewQuery().
+		Get("current_job.company").
+		Run(&xx, nil)
+	log.Println(xx, qerr)
 
+	var yy []string
+	qerr2 := store.NewQuery().
+		Get("past_jobs.company").
+		Run(&yy, nil)
+	log.Println(yy, qerr2)
+
+	//jobObj := store.GetIndexed("past_jobs", 1, "company")
+	//if jobObj != nil {
+	//
+	//}
+
+}
+
+func BenchmarkAdd(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		store := ystore.NewStore()
+		person := makePerson()
+		err := store.AddData(person, nil)
+		if err != nil {
+			log.Println(err)
+		}
+		log.Println("...")
 	}
-
 }

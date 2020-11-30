@@ -23,11 +23,40 @@ func (ds *Store) AddData(data interface{}, options *MergeOptions) error {
 func (ds *Store) merge(destination map[string]interface{}, source reflect.Value, options *MergeOptions) {
 	if source.Kind() == reflect.Struct {
 		ds.mergeStruct(destination, source, options)
-	} else {
-		// at this point, we have a raw data element or it's a data element that
-		// we aren't going to be processing any further so we just return it and
-		// allow it to be assigned another way
+	} else if source.Kind() == reflect.Map {
+		ds.mergeMap(destination, source, options)
 	}
+}
+
+func (ds *Store) mergeMap(destination map[string]interface{}, source reflect.Value, options *MergeOptions) {
+	mapRange := source.MapRange()
+	for mapRange.Next() {
+		key := mapRange.Key().String()
+		val := reflect.ValueOf(mapRange.Value().Interface())
+		if val.Type().Kind() == reflect.Ptr {
+			val = val.Elem()
+		}
+		if val.Type().Kind() == reflect.Struct {
+			structMap := map[string]interface{}{}
+			ds.mergeStruct(structMap, val, options)
+			destination[key] = structMap
+		} else if val.Type().Kind() == reflect.Map {
+			outMap := map[string]interface{}{}
+			ds.mergeMap(outMap, val, options)
+			destination[key] = outMap
+		} else if val.Type().Kind() == reflect.Slice {
+			var slice []interface{}
+			ds.mergeSlice(&slice, val, options)
+			destination[key] = slice
+		} else {
+			// at this point, we have a raw data element or it's a data element that
+			// we aren't going to be processing any further so we just return it and
+			// allow it to be assigned another way
+			destination[key] = val.Interface()
+		}
+
+	}
+
 }
 
 func (ds *Store) mergeStruct(destination map[string]interface{}, source reflect.Value, options *MergeOptions) {
@@ -47,16 +76,32 @@ func (ds *Store) mergeStruct(destination map[string]interface{}, source reflect.
 			// TODO - tag options
 			key = splitTag[0]
 		}
-		if fi.Type.Kind() == reflect.Struct {
+		indexedVal := source.Field(i)
+		if fi.Type.Kind() == reflect.Ptr {
+			indexedVal = indexedVal.Elem()
+		}
+		kind := fi.Type.Kind()
+		if fi.Type.Kind() == reflect.Interface {
+			indexedVal = reflect.ValueOf(indexedVal.Interface())
+			kind = indexedVal.Type().Kind()
+		}
+		if kind == reflect.Struct {
 			structMap := map[string]interface{}{}
-			ds.mergeStruct(structMap, source.Field(i), options)
+			ds.mergeStruct(structMap, indexedVal, options)
 			destination[key] = structMap
-		} else if fi.Type.Kind() == reflect.Slice {
+		} else if kind == reflect.Map {
+			outMap := map[string]interface{}{}
+			ds.mergeMap(outMap, indexedVal, options)
+			destination[key] = outMap
+		} else if kind == reflect.Slice {
 			var slice []interface{}
-			ds.mergeSlice(&slice, source.Field(i), options)
+			ds.mergeSlice(&slice, indexedVal, options)
 			destination[key] = slice
 		} else {
-			destination[key] = source.Field(i).Interface()
+			// at this point, we have a raw data element or it's a data element that
+			// we aren't going to be processing any further so we just return it and
+			// allow it to be assigned another way
+			destination[key] = indexedVal.Interface()
 		}
 	}
 }
@@ -64,10 +109,17 @@ func (ds *Store) mergeStruct(destination map[string]interface{}, source reflect.
 func (ds *Store) mergeSlice(destination *[]interface{}, source reflect.Value, options *MergeOptions) {
 	for i := 0; i < source.Len(); i++ {
 		iv := source.Index(i)
+		if iv.Kind() == reflect.Ptr {
+			iv = iv.Elem()
+		}
 		if iv.Kind() == reflect.Struct {
 			structMap := map[string]interface{}{}
 			ds.mergeStruct(structMap, iv, options)
 			*destination = append(*destination, structMap)
+		} else if iv.Kind() == reflect.Map {
+			outMap := map[string]interface{}{}
+			ds.mergeMap(outMap, iv, options)
+			*destination = append(*destination, outMap)
 		} else if iv.Kind() == reflect.Slice {
 			var slice []interface{}
 			ds.mergeSlice(&slice, iv, options)

@@ -1,5 +1,5 @@
 <br/>
-<img src="https://storage.googleapis.com/product-logos/logo_ystore.png" width="70" height="70">
+<img src="https://storage.googleapis.com/product-logos/logo_ystore.svg" width="70" height="70">
 <br/>
 ystore is a data management tool. It can be used as a generic key-value datastore, for flexible configuration storage or used as a way to import arbitrary data into your application from data files (e.g.: from a CMS or other system).
 
@@ -74,17 +74,16 @@ fmt.Printf("The item name is '%s' and the numbers slice has %d element(s).\n", n
 
 ### Can I use this as a database?
 
-You could, but it may not be the best solution. Our goal is to provide a super flexible data management solution for a variety of application data and to not be a full scale database. A quick search on Google will find a variety of great solutions if you need to embed a database.
+You could, but it may not be the best solution. Our goal is to provide a super flexible, in-memory data solution for a variety of use cases. Our goal isn't to be a full scale database. A quick search on Google will find a variety of great solutions if you need to embed a database.
 
-### How is this different to Viper?
+### What kind of use cases are people using ystore for?
 
-First up, Viper is **fantastic** and super useful. ystore isn't trying to compete with viper. 
+We've been using it for things like environment parsing, configuration file loading, parsing network json responses, and a whole bunch of other things. ystore is really useful whenever you're trying to bring together a variety of different data sources for easy retrieval / manipulation. 
 
-The overall intent of ystore is to offer a more *generic* data mechanism, to allow files/formats to be used interchangeably, and to make it simple to just parse a bunch of it at the same time. Viper is more suited for application configuration specific task. You can still use ystore for application configuration (it works great!) but you may end up needing to do a few additional tasks yourself.  
+### Is it production ready?
 
-## Related
+It's currently in use on a variety of production servers right now. So, yes it is. If you're using it, drop us a line to tell us!
 
-[Viper](https://github.com/spf13/viper) - Go configuration with fangs
 
 ## License
 ystore is released under a modified MIT license. See LICENSE for details.

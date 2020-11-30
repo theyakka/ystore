@@ -13,12 +13,13 @@ import (
 )
 
 type Person struct {
-	FirstName  string   `ystore:"first_name"`
-	LastName   string   `ystore:"last_name"`
-	Age        int      `ystore:"age"`
-	CurrentJob Job      `ystore:"current_job"`
-	PastJobs   []Job    `ystore:"past_jobs"`
-	Skills     []string `ystore:"skills"`
+	FirstName  string      `ystore:"first_name"`
+	LastName   string      `ystore:"last_name"`
+	Age        int         `ystore:"age"`
+	CurrentJob Job         `ystore:"current_job"`
+	PastJobs   []Job       `ystore:"past_jobs"`
+	Skills     []string    `ystore:"skills"`
+	Data       interface{} `ystore:"data"`
 }
 
 type Job struct {
@@ -53,6 +54,22 @@ func makePerson() *Person {
 		},
 		Skills: []string{
 			"Professional", "Hard Working", "Independent", "Strong",
+		},
+		Data: map[string]interface{}{
+			"some_stuff": []map[string]interface{}{
+				{"color": "red", "count": 55},
+				{"color": "blue", "count": 22},
+				{"color": "orange", "count": 99, "keywords": []string{"foo", "blah", "goat"}},
+			},
+			"turnip": 138927389713,
+			"monkey": map[string]interface{}{
+				"something": "gah",
+				"this":      "that",
+				"job": &Job{
+					Company:     "boobooooo",
+					YearStarted: 2020,
+				},
+			},
 		},
 	}
 }

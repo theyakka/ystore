@@ -47,7 +47,7 @@ func searchPaths(source interface{}, paths []string, options SearchOptions) inte
 	v := reflect.ValueOf(source)
 	if v.Kind() == reflect.Map {
 		mapVal := v.MapIndex(reflect.ValueOf(paths[0]))
-		if mapVal.IsZero() {
+		if !mapVal.IsValid() || mapVal.IsNil() || mapVal.IsZero() {
 			return nil
 		}
 		return searchPaths(mapVal.Interface(), paths[1:], options)
