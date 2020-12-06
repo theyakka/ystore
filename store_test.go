@@ -7,9 +7,10 @@
 package ystore_test
 
 import (
-	"github.com/theyakka/ystore"
 	"log"
 	"testing"
+
+	"github.com/theyakka/ystore"
 )
 
 func TestAddStructs(t *testing.T) {
@@ -47,6 +48,5 @@ func BenchmarkAdd(b *testing.B) {
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println("...")
 	}
 }
