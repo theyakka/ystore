@@ -1,5 +1,5 @@
 <br/>
-<img src="https://storage.googleapis.com/product-logos/logo_ystore.svg" width="70" height="70">
+<img src="https://storage.googleapis.com/product-logos/logo_ystore.svg" width="70" height="70" alt="ystore">
 <br/>
 ystore is a data management tool. It can be used as a generic key-value datastore, for flexible configuration storage or used as a way to import arbitrary data into your application from data files (e.g.: from a CMS or other system).
 
@@ -16,7 +16,7 @@ The goal of ystore's is to provide flexible access to your data.
 
 ## Memory-based Stores
 
-At it's core, ystore is a simple **key-value** store. You can easily
+At its core, ystore is a simple **key-value** store. You can easily
 create a simple `Store` like so:
 
 ```go
@@ -78,7 +78,7 @@ You could, but it may not be the best solution. Our goal is to provide a super f
 
 ### What kind of use cases are people using ystore for?
 
-We've been using it for things like environment parsing, configuration file loading, parsing network json responses, and a whole bunch of other things. ystore is really useful whenever you're trying to bring together a variety of different data sources for easy retrieval / manipulation. 
+We've been using it for things like environment parsing, configuration file loading, parsing network json responses, and a lot of other things. ystore is really useful whenever you're trying to bring together a variety of different data sources for easy retrieval / manipulation. 
 
 ### Is it production ready?
 
@@ -88,4 +88,4 @@ It's currently in use on a variety of production servers right now. So, yes it i
 ## License
 ystore is released under a modified MIT license. See LICENSE for details.
 
-Portions of the code are derived from other works. Please see NOTICE for details on usage and their associated licenses.
+Portions of the code are derived from other works. Please see NOTICE for details on usage, and their associated licenses.
