@@ -23,15 +23,19 @@ func TestAddStructs(t *testing.T) {
 	}
 	var xx string
 	qerr := store.NewQuery().
-		Get("current_job.company").
+		Get("data.monkey.something").
 		Run(&xx, nil)
+	log.Println("q1 ---")
 	log.Println(xx, qerr)
+	log.Println("---")
 
 	var yy []string
 	qerr2 := store.NewQuery().
 		Get("past_jobs.company").
 		Run(&yy, nil)
+	log.Println("q2 ---")
 	log.Println(yy, qerr2)
+	log.Println("---")
 
 	//jobObj := store.GetIndexed("past_jobs", 1, "company")
 	//if jobObj != nil {

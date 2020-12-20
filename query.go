@@ -1,6 +1,7 @@
 package ystore
 
 import (
+	"log"
 	"reflect"
 	"strings"
 )
@@ -45,18 +46,23 @@ func (q *Query) Run(dest interface{}, options *QueryOptions) error {
 }
 
 func (q *Query) RunD(dest interface{}, defaultValue interface{}, options *QueryOptions) error {
+	// no query conditions so we can't proceed
 	if len(q.criteria) == 0 {
-		return NewQueryError("you must specify one or more query conditions")
+		return NewQueryError("you must specify one or more query conditions", 0)
 	}
 	// run the query
 	var results []interface{}
+	// TODO - should also error
 	q.findPath(q.store.data, q.criteria, &results, options)
+	// if there were no results we're done
+	if len(results) == 0 {
+		return NewQueryError("there were no results", 404)
+	}
 	// set the value
 	rv := reflect.ValueOf(dest)
 	if rv.Kind() != reflect.Ptr || !rv.IsValid() {
-		return NewQueryError("destination must be a valid pointer to something")
+		return NewQueryError("destination must be a valid pointer to something", 0)
 	}
-
 	elemVal := results[0]
 	if elemVal == nil && defaultValue != nil {
 		elemVal = defaultValue
@@ -72,18 +78,21 @@ func (q *Query) findPath(source interface{}, criteria []criteria, results *[]int
 		mapVal := source.(map[string]interface{})
 		key := criteria[0].segment
 		nextSource := mapVal[key]
+		if nextSource == nil {
+			*results = nil
+			break
+		}
 		if len(criteria) == 1 {
 			*results = append(*results, nextSource)
 		} else {
-			if nextSource != nil {
-				q.findPath(nextSource, criteria, results, options)
-			}
+			q.findPath(nextSource, criteria[1:], results, options)
 		}
 	case []interface{}:
 		sliceVal := source.([]interface{})
 		for _, v := range sliceVal {
-			q.findPath(v, criteria[1:], results, options)
+			q.findPath(v, criteria, results, options)
 		}
+		log.Println("....")
 	default:
 		if len(criteria) == 1 {
 			*results = append(*results, source)
@@ -97,16 +106,26 @@ type criteria struct {
 
 type QueryError struct {
 	message string
+	code    int
 }
 
-func NewQueryError(message string) *QueryError {
+func NewQueryError(message string, code int) *QueryError {
 	return &QueryError{
 		message: message,
+		code:    code,
 	}
 }
 
 func (q QueryError) Error() string {
 	return q.message
+}
+
+func (q QueryError) Code() int {
+	return q.code
+}
+
+func (q QueryError) IsNoResults() bool {
+	return q.code == 404
 }
 
 type QueryOption func(options *QueryOptions)
