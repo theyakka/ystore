@@ -63,12 +63,26 @@ func (q *Query) RunD(dest interface{}, defaultValue interface{}, options *QueryO
 	if rv.Kind() != reflect.Ptr || !rv.IsValid() {
 		return NewQueryError("destination must be a valid pointer to something", 0)
 	}
-	elemVal := results[0]
-	if elemVal == nil && defaultValue != nil {
-		elemVal = defaultValue
+
+	elemKind := rv.Elem().Kind()
+	if elemKind == reflect.Slice {
+		outSlice := reflect.New(rv.Elem().Type()).Elem()
+		for _, v := range results {
+			x := reflect.ValueOf(v)
+			xv := x.Convert(rv.Elem().Type().Elem())
+			outSlice = reflect.Append(outSlice, xv)
+		}
+		elem := reflect.Indirect(rv.Elem())
+		elem.Set(outSlice)
+	} else {
+		elemVal := results[0]
+		if elemVal == nil && defaultValue != nil {
+			elemVal = defaultValue
+		}
+		elem := reflect.Indirect(rv.Elem())
+		elem.Set(reflect.ValueOf(elemVal))
 	}
-	elem := reflect.Indirect(rv.Elem())
-	elem.Set(reflect.ValueOf(elemVal))
+
 	return nil
 }
 
