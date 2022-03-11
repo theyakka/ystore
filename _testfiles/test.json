@@ -1,0 +1,14 @@
+{
+  "test" : {
+	"string" : "this is a string",
+	"int": 55,
+	"nested" : {
+	  "string": "this is a nested string",
+	  "bool" : {
+		"t" : true,
+		"f" : false
+	  },
+	  "array" : [ "one", "two", "three" ]
+	}
+  }
+}

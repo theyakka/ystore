@@ -1,262 +1,66 @@
 // Created by Yakka (https://theyakka.com)
 //
-// Copyright (c) 2020 Yakka LLC.
+// Copyright (c) 2022 Yakka LLC.
 // All rights reserved.
 // See the LICENSE file for licensing details and requirements.
 
 package ystore
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"regexp"
-
-	"github.com/BurntSushi/toml"
-	"gopkg.in/yaml.v2"
+	"sync"
 )
 
-// Store is a giant data map that is constructed from one or more data files
-// that are stored within a directory and series of sub-directories
+const (
+	defaultCacheState = true
+	defaultCacheSize  = 50
+)
+
 type Store struct {
-	// data is the primary storage for all the parsed data/config files
-	data map[string]interface{}
-
-	// PrefixDirectories adds a prefix to the data map for any directories that are
-	// not the top-level directory. For example: given the file
-	// <datadir>/categories/somecat.toml, the contents of the toml file will live in
-	// the map under the prefix (key) "categories"
-	PrefixDirectories bool
-
-	// Exclude contains patterns that we should be excluding when walking the data
-	// directory
-	Exclude []string
+	driver      Driver
+	flags       Flag
+	entries     map[string]*Entry
+	enableCache bool
+	cacheLimit  int
+	cache       map[string]*Entry
+	mutex       sync.RWMutex
 }
 
-//
-func NewStore() *Store {
-	return &Store{
-		data:              map[string]interface{}{},
-		PrefixDirectories: true,
+func NewStore(options ...Option) *Store {
+	store := &Store{
+		flags:       ParseObjects,
+		entries:     map[string]*Entry{},
+		enableCache: defaultCacheState,
+		cacheLimit:  defaultCacheSize,
 	}
-}
-
-func NewStoreWithData(data interface{}) *Store {
-	if mapData, ok := data.(map[string]interface{}); ok {
-		return NewStoreFromMap(mapData)
+	for _, opt := range options {
+		opt(store)
 	}
-	store := NewStore()
-	if mapData, ok := data.(map[interface{}]interface{}); ok {
-		for k, v := range mapData {
-			strKey, ok := k.(string)
-			if !ok {
-				continue
-			}
-			store.Set(strKey, v)
-		}
+	if store.enableCache {
+		// only initialize the cache storage if we have enabled the cache
+		store.cache = map[string]*Entry{}
 	}
 	return store
 }
 
-//
-func NewStoreFromMap(data map[string]interface{}) *Store {
-	return &Store{
-		data:              data,
-		PrefixDirectories: true,
-	}
+func (s *Store) SetDriver(driver Driver) {
+	s.driver = driver
 }
 
-func NewStoreFromMapWithSubs(data map[string]interface{}) *Store {
-	store := NewStore()
-	for k, v := range data {
-		switch v.(type) {
-		case map[string]interface{}:
-			store.Set(k, NewStoreFromMap(v.(map[string]interface{})))
-		default:
-			store.Set(k, v)
-		}
-	}
-	return store
+func (s *Store) Load(uri string) error {
+	return s.driver.Load(s, uri)
 }
 
-func (ds *Store) ReadFile(filePath string) error {
-	// clear the data map
-	ds.data = map[string]interface{}{}
-	// check to see if the directory exists
-	if _, statErr := os.Stat(filePath); statErr != nil {
-		return statErr
-	}
-	// read the data / config files within the directory
-	dataMap, dataReadErr := ds.readFile(filePath)
-	if dataReadErr != nil {
-		return dataReadErr
-	}
-	ds.data = dataMap
-	return nil
-}
-
-func (ds *Store) ReadFiles(filePaths ...string) error {
-	// clear the data map
-	ds.data = map[string]interface{}{}
-	// check to see if the directory exists
-	fullData := map[string]interface{}{}
-	for _, filePath := range filePaths {
-		if _, statErr := os.Stat(filePath); statErr != nil {
-			return statErr
-		}
-		// read the data / config files within the directory
-		fileData, dataReadErr := ds.readFile(filePath)
-		if dataReadErr != nil {
-			return dataReadErr
-		}
-		MergeMaps(fileData, fullData, nil)
-	}
-	ds.data = fullData
-	return nil
-}
-
-// ReadDir will parse all data files within the directory and all sub-directories
-func (ds *Store) ReadDir(path string) error {
-	// clear the data map
-	ds.data = map[string]interface{}{}
-	// check to see if the directory exists
-	statInfo, statErr := os.Stat(path)
-	if statErr != nil {
-		return statErr
-	}
-	// check to see if the defined directory is actually a directory
-	if !statInfo.IsDir() {
-		return errors.New("you must specify a directory")
-	}
-	// read the data / config files within the directory
-	dataMap, dataReadErr := ds.readAllFiles(path)
-	if dataReadErr != nil {
-		return dataReadErr
-	}
-	ds.data = dataMap
-	return nil
-}
-
-func (ds *Store) readAllFiles(dirPath string) (map[string]interface{}, error) {
-	var fullData = map[string]interface{}{}
-	walkErr := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			// skip directories. the walk function will flatten any sub-directories
-			return nil
-		}
-		fileData, fileErr := ds.readFile(path)
-		if fileErr != nil {
-			return fileErr
-		}
-		fileDir := filepath.Dir(path)
-		if fileDir != path && ds.PrefixDirectories {
-			// add the prefix to the file data map because it is in a sub-directory
-			mapPrefix := BaseDir(path)
-			fileData = map[string]interface{}{
-				mapPrefix: fileData,
-			}
-		}
-		// merge the main data map and the file data map
-		MergeMaps(fileData, fullData, nil)
-		return nil
-	})
-	if walkErr != nil {
-		return nil, walkErr
-	}
-	return fullData, nil
-}
-
-func (ds *Store) readFile(filePath string) (map[string]interface{}, error) {
-	data, dataErr := ioutil.ReadFile(filePath)
-	if dataErr != nil {
-		return nil, dataErr
-	}
-	var fileMap map[string]interface{}
-	switch filepath.Ext(filePath) {
-	case ".toml":
-		tomlErr := toml.Unmarshal(data, &fileMap)
-		if tomlErr != nil {
-			return nil, tomlErr
-		}
-		return fileMap, nil
-	case ".yaml":
-		fallthrough
-	case ".yml":
-		yamlErr := yaml.Unmarshal(data, &fileMap)
-		if yamlErr != nil {
-			return nil, yamlErr
-		}
-		return fileMap, nil
-	case ".json":
-		jsonErr := json.Unmarshal(data, &fileMap)
-		if jsonErr != nil {
-			return nil, jsonErr
-		}
-		return fileMap, nil
-	}
-	return nil, errors.New(fmt.Sprintf("file type (%s) is unsupported", filepath.Ext(filePath)))
-}
-
-func (ds *Store) AllValues() map[string]interface{} {
-	return ds.data
-}
-
-func (ds *Store) StoreFromMap(key string) *Store {
-	value := ds.GetMap(key)
-	if value == nil {
+func (s *Store) Persist() error {
+	if s.driver == nil {
 		return nil
 	}
-	return NewStoreFromMap(value)
+	return s.driver.Persist()
 }
 
-func (ds *Store) StoreFromMapOrEmpty(key string) *Store {
-	value := ds.GetMap(key)
-	if value == nil {
-		return NewStore()
-	}
-	return NewStoreFromMap(value)
+func (s *Store) HasFlag(flag Flag) bool {
+	return s.flags&flag != 0
 }
 
-func (ds *Store) StoreMatching(pattern string) *Store {
-	matchRegex, compileErr := regexp.Compile(pattern)
-	if compileErr != nil {
-		return nil
-	}
-	matches := map[string]interface{}{}
-	for key, val := range ds.data {
-		if matchRegex.MatchString(key) {
-			matches[key] = val
-		}
-	}
-	return NewStoreFromMap(matches)
-}
-
-func (ds *Store) Len() int {
-	return len(ds.data)
-}
-
-func (ds *Store) MergeWith(stores ...*Store) *Store {
-	return MergeStores(append(stores, ds)...)
-}
-
-func MergeStores(stores ...*Store) *Store {
-	finalMap := map[string]interface{}{}
-	for _, store := range stores {
-		MergeMaps(store.AllValues(), finalMap, nil)
-	}
-	return NewStoreFromMap(finalMap)
-}
-
-func (ds *Store) ToJSONString() string  {
-	jsonString, jsonErr := json.Marshal(ds.data)
-	if jsonErr != nil {
-		return ""
-	}
-	return string(jsonString)
+func (s *Store) Clear() {
+	s.entries = map[string]*Entry{}
 }
