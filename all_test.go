@@ -7,7 +7,6 @@
 package ystore_test
 
 import (
-	"fmt"
 	"github.com/theyakka/ystore"
 	"github.com/theyakka/ystore/drivers/json"
 	"testing"
@@ -33,9 +32,6 @@ func TestJSONDriver(t *testing.T) {
 		t.Fail()
 		return
 	}
-
-	t11 := s.Get("test.string3").IntValue()
-	fmt.Println(t11)
 
 	t2 := s.Get("test.int").IntValue()
 	if t2 != 55 {
