@@ -1,4 +1,4 @@
-package json_driver
+package json
 
 import (
 	"encoding/json"
@@ -35,7 +35,7 @@ func (jd *Driver) Load(store *ystore.Store, uri string) error {
 func (jd *Driver) Parameters() *ystore.DriverParameters {
 	return &ystore.DriverParameters{
 		IsReadOnly:  false,
-		Name:        "json_driver",
+		Name:        "json",
 		AutoPersist: false,
 	}
 }

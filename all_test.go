@@ -9,8 +9,7 @@ package ystore_test
 import (
 	"fmt"
 	"github.com/theyakka/ystore"
-	"github.com/theyakka/ystore/drivers/json_driver"
-	"reflect"
+	"github.com/theyakka/ystore/drivers/json"
 	"testing"
 )
 
@@ -26,22 +25,34 @@ func exampleStore() *ystore.Store {
 
 func TestJSONDriver(t *testing.T) {
 	s := ystore.NewStore(ystore.WithCache(true, 5))
-	s.SetDriver(json_driver.NewDriver())
+	s.SetDriver(json.NewDriver())
 	_ = s.Load("_testfiles/test.json")
+
+	t1 := s.Get("test.string").StringValue()
+	if t1 != "this is a string" {
+		t.Fail()
+		return
+	}
+
+	t11 := s.Get("test.string3").IntValue()
+	fmt.Println(t11)
+
+	t2 := s.Get("test.int").IntValue()
+	if t2 != 55 {
+		t.Fail()
+		return
+	}
+
 	a := s.Get("test.nested.array")
 	if a == nil {
 		t.Fail()
 		return
 	}
-	aa := ystore.Cast[any, []any](a.RawValue())
+	aa := ystore.CastSlice[string](a.RawValue())
 	if len(aa) != 3 {
 		t.Fail()
 		return
 	}
-	fmt.Println(aa)
-	fmt.Println(len(aa))
-	fmt.Println(reflect.ValueOf(aa[0]).Kind().String())
-
 }
 
 func TestSimpleGet(t *testing.T) {

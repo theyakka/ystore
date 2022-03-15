@@ -1,7 +1,7 @@
 package ystore
 
 import (
-	"github.com/spf13/cast"
+	"reflect"
 	"strings"
 )
 
@@ -50,44 +50,50 @@ func (e *Entry) RawValue() any {
 }
 
 func (e *Entry) RawValueD(defaultValue any) any {
-	if e == nil || e.value.IsNil() || e.value.IsZero() {
+	if e == nil {
 		return defaultValue
+	}
+	switch reflect.TypeOf(e.value).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		if e.value.IsNil() {
+			return defaultValue
+		}
 	}
 	return e.value
 }
 
 func (e *Entry) StringValue() string {
-	return cast.ToString(e.RawValue())
+	return Cast[any, string](e.RawValue())
 }
 
 func (e *Entry) StringValueD(defaultValue string) string {
-	return cast.ToString(e.RawValueD(defaultValue))
+	return Cast[any, string](e.RawValueD(defaultValue))
 }
 
 func (e *Entry) BoolValue() bool {
-	return cast.ToBool(e.RawValue())
+	return Cast[any, bool](e.RawValue())
 }
 
 func (e *Entry) BoolValueD(defaultValue bool) bool {
-	return cast.ToBool(e.RawValueD(defaultValue))
+	return Cast[any, bool](e.RawValueD(defaultValue))
 }
 
 func (e *Entry) IntValue() int {
-	return cast.ToInt(e.RawValue())
+	return Cast[any, int](e.RawValue())
 }
 
 func (e *Entry) IntValueD(defaultValue int) int {
-	return cast.ToInt(e.RawValueD(defaultValue))
+	return CastD[any, int](e.RawValue(), defaultValue)
 }
 
 func (e *Entry) FloatValue() float64 {
-	return cast.ToFloat64(e.RawValue())
+	return Cast[any, float64](e.RawValue())
 }
 
 func (e *Entry) FloatValueD(defaultValue float64) float64 {
-	return cast.ToFloat64(e.RawValueD(defaultValue))
+	return Cast[any, float64](e.RawValueD(defaultValue))
 }
 
 func (e *Entry) SliceValue() []any {
-	return Cast[any, []any](e.RawValue())
+	return CastSlice[any](e.RawValue())
 }

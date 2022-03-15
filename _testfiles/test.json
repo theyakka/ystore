@@ -1,6 +1,7 @@
 {
   "test" : {
 	"string" : "this is a string",
+	"string3" : "33",
 	"int": 55,
 	"nested" : {
 	  "string": "this is a nested string",
