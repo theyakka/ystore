@@ -87,3 +87,7 @@ func (e *Entry) FloatValue() float64 {
 func (e *Entry) FloatValueD(defaultValue float64) float64 {
 	return cast.ToFloat64(e.RawValueD(defaultValue))
 }
+
+func (e *Entry) SliceValue() []any {
+	return Cast[any, []any](e.RawValue())
+}

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/theyakka/ystore"
 	"github.com/theyakka/ystore/drivers/json_driver"
+	"reflect"
 	"testing"
 )
 
@@ -26,9 +27,21 @@ func exampleStore() *ystore.Store {
 func TestJSONDriver(t *testing.T) {
 	s := ystore.NewStore(ystore.WithCache(true, 5))
 	s.SetDriver(json_driver.NewDriver())
-	_ = s.Load("_testfiles/test.json_driver")
-	e := s.Get("test.nested.array")
-	fmt.Println(e.RawValue())
+	_ = s.Load("_testfiles/test.json")
+	a := s.Get("test.nested.array")
+	if a == nil {
+		t.Fail()
+		return
+	}
+	aa := ystore.Cast[any, []any](a.RawValue())
+	if len(aa) != 3 {
+		t.Fail()
+		return
+	}
+	fmt.Println(aa)
+	fmt.Println(len(aa))
+	fmt.Println(reflect.ValueOf(aa[0]).Kind().String())
+
 }
 
 func TestSimpleGet(t *testing.T) {
