@@ -1,6 +1,7 @@
 package ystore
 
 import (
+	"github.com/spf13/cast"
 	"reflect"
 	"strings"
 )
@@ -30,6 +31,19 @@ func (e *Entry) Parent() *Entry {
 	return e.parent
 }
 
+func (e *Entry) IsValid() bool {
+	if e == nil || !e.value.IsValid() {
+		return false
+	}
+	switch reflect.TypeOf(e.value).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		if e.value.IsNil() {
+			return false
+		}
+	}
+	return true
+}
+
 func (e *Entry) Get(keyPath string) *Entry {
 	e.store.mutex.RLock()
 	entry := e.store.cache[e.KeyPath()]
@@ -50,50 +64,63 @@ func (e *Entry) RawValue() any {
 }
 
 func (e *Entry) RawValueD(defaultValue any) any {
-	if e == nil {
+	if !e.IsValid() {
 		return defaultValue
-	}
-	switch reflect.TypeOf(e.value).Kind() {
-	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
-		if e.value.IsNil() {
-			return defaultValue
-		}
 	}
 	return e.value
 }
 
 func (e *Entry) StringValue() string {
-	return Cast[any, string](e.RawValue())
+	return cast.ToString(e.RawValue())
 }
 
 func (e *Entry) StringValueD(defaultValue string) string {
-	return Cast[any, string](e.RawValueD(defaultValue))
+	if !e.IsValid() {
+		return defaultValue
+	}
+	return cast.ToString(e.RawValue())
 }
 
 func (e *Entry) BoolValue() bool {
-	return Cast[any, bool](e.RawValue())
+	return cast.ToBool(e.RawValue())
 }
 
 func (e *Entry) BoolValueD(defaultValue bool) bool {
-	return Cast[any, bool](e.RawValueD(defaultValue))
+	if !e.IsValid() {
+		return defaultValue
+	}
+	return cast.ToBool(e.RawValue())
 }
 
 func (e *Entry) IntValue() int {
-	return Cast[any, int](e.RawValue())
+	return cast.ToInt(e.RawValue())
 }
 
 func (e *Entry) IntValueD(defaultValue int) int {
-	return CastD[any, int](e.RawValue(), defaultValue)
+	if !e.IsValid() {
+		return defaultValue
+	}
+	return cast.ToInt(e.RawValue())
 }
 
 func (e *Entry) FloatValue() float64 {
-	return Cast[any, float64](e.RawValue())
+	return cast.ToFloat64(e.RawValue())
 }
 
 func (e *Entry) FloatValueD(defaultValue float64) float64 {
-	return Cast[any, float64](e.RawValueD(defaultValue))
+	if !e.IsValid() {
+		return defaultValue
+	}
+	return cast.ToFloat64(e.RawValue())
 }
 
 func (e *Entry) SliceValue() []any {
-	return CastSlice[any](e.RawValue())
+	return cast.ToSlice(e.RawValue())
+}
+
+func (e *Entry) SliceValueD(defaultValue []any) []any {
+	if !e.IsValid() {
+		return defaultValue
+	}
+	return cast.ToSlice(e.RawValue())
 }

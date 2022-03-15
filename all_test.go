@@ -48,11 +48,6 @@ func TestJSONDriver(t *testing.T) {
 		t.Fail()
 		return
 	}
-	aa := ystore.CastSlice[string](a.RawValue())
-	if len(aa) != 3 {
-		t.Fail()
-		return
-	}
 }
 
 func TestSimpleGet(t *testing.T) {
