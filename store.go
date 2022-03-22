@@ -7,6 +7,7 @@
 package ystore
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -63,4 +64,17 @@ func (s *Store) HasFlag(flag Flag) bool {
 
 func (s *Store) Clear() {
 	s.entries = map[string]*Entry{}
+}
+
+func (s *Store) Debug() {
+	printEntries(s.Entries())
+}
+
+func printEntries(entries map[string]*Entry) {
+	for _, e := range entries {
+		fmt.Println(e.Key(), "=", e.Value(), ":", e.Kind())
+		if e.children != nil {
+			printEntries(e.children)
+		}
+	}
 }

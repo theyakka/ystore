@@ -1,7 +1,6 @@
 package ystore
 
 import (
-	"github.com/spf13/cast"
 	"reflect"
 	"strings"
 )
@@ -31,11 +30,15 @@ func (e *Entry) Parent() *Entry {
 	return e.parent
 }
 
+func (e *Entry) Kind() reflect.Kind {
+	return e.value.Kind()
+}
+
 func (e *Entry) IsValid() bool {
 	if e == nil || !e.value.IsValid() {
 		return false
 	}
-	switch reflect.TypeOf(e.value).Kind() {
+	switch e.value.Kind() {
 	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
 		if e.value.IsNil() {
 			return false
@@ -56,71 +59,16 @@ func (e *Entry) Get(keyPath string) *Entry {
 	return entry
 }
 
-func (e *Entry) RawValue() any {
+func (e *Entry) Value() any {
 	if e != nil && e.value.IsValid() {
 		return e.value.Interface()
 	}
 	return nil
 }
 
-func (e *Entry) RawValueD(defaultValue any) any {
+func (e *Entry) ValueD(defaultValue any) any {
 	if !e.IsValid() {
 		return defaultValue
 	}
 	return e.value
-}
-
-func (e *Entry) StringValue() string {
-	return cast.ToString(e.RawValue())
-}
-
-func (e *Entry) StringValueD(defaultValue string) string {
-	if !e.IsValid() {
-		return defaultValue
-	}
-	return cast.ToString(e.RawValue())
-}
-
-func (e *Entry) BoolValue() bool {
-	return cast.ToBool(e.RawValue())
-}
-
-func (e *Entry) BoolValueD(defaultValue bool) bool {
-	if !e.IsValid() {
-		return defaultValue
-	}
-	return cast.ToBool(e.RawValue())
-}
-
-func (e *Entry) IntValue() int {
-	return cast.ToInt(e.RawValue())
-}
-
-func (e *Entry) IntValueD(defaultValue int) int {
-	if !e.IsValid() {
-		return defaultValue
-	}
-	return cast.ToInt(e.RawValue())
-}
-
-func (e *Entry) FloatValue() float64 {
-	return cast.ToFloat64(e.RawValue())
-}
-
-func (e *Entry) FloatValueD(defaultValue float64) float64 {
-	if !e.IsValid() {
-		return defaultValue
-	}
-	return cast.ToFloat64(e.RawValue())
-}
-
-func (e *Entry) SliceValue() []any {
-	return cast.ToSlice(e.RawValue())
-}
-
-func (e *Entry) SliceValueD(defaultValue []any) []any {
-	if !e.IsValid() {
-		return defaultValue
-	}
-	return cast.ToSlice(e.RawValue())
 }

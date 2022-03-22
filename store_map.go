@@ -1,7 +1,6 @@
 package ystore
 
 import (
-	"log"
 	"reflect"
 )
 
@@ -17,7 +16,7 @@ func AddMapValues(store *Store, entries map[string]*Entry, mapValues map[string]
 			store: store,
 			key:   k,
 		}
-		switch vt := v.(type) {
+		switch v.(type) {
 		case map[string]any:
 			if store.HasFlag(ParseObjects) {
 				entry.children = map[string]*Entry{}
@@ -30,7 +29,6 @@ func AddMapValues(store *Store, entries map[string]*Entry, mapValues map[string]
 			entry.value = reflect.ValueOf(v)
 			break
 		default:
-			log.Println(vt)
 			entry.value = reflect.ValueOf(v)
 		}
 		entries[k] = entry
