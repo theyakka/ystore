@@ -9,6 +9,7 @@ package ystore_test
 import (
 	"github.com/theyakka/ystore"
 	"github.com/theyakka/ystore/drivers/json"
+	"log"
 	"testing"
 )
 
@@ -44,6 +45,18 @@ func TestJSONDriver(t *testing.T) {
 		t.Fail()
 		return
 	}
+}
+
+func TestMerge(t *testing.T) {
+	s1 := ystore.NewStore()
+	ystore.Set(s1, "test", 22)
+	ystore.Set(s1, "test.this", 55)
+	ystore.Set(s1, "test.that", 66)
+	s2 := ystore.NewStore()
+	ystore.Set(s2, "test.this", 99)
+	ystore.Set(s2, "test.that.thing", 100)
+	_ = ystore.Merge(s1, s2)
+	log.Println("merged")
 }
 
 func TestSimpleGet(t *testing.T) {

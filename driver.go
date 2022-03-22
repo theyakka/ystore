@@ -14,7 +14,7 @@ type Driver interface {
 	// Parameters returns details about the drivers and its capabilities.
 	Parameters() *DriverParameters
 	// Load loads the data from the provided URI.
-	Load(store *Store, uri string) error
+	Load(store *Store, uris ...string) error
 	// Persist saves the data if the drivers supports persistence.
 	Persist() error
 }

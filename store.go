@@ -46,8 +46,8 @@ func (s *Store) SetDriver(driver Driver) {
 	s.driver = driver
 }
 
-func (s *Store) Load(uri string) error {
-	return s.driver.Load(s, uri)
+func (s *Store) Load(uris ...string) error {
+	return s.driver.Load(s, uris...)
 }
 
 func (s *Store) Persist() error {

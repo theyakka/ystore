@@ -7,28 +7,30 @@ import (
 )
 
 type Driver struct {
-	uri string
+	uris []string
 }
 
 func NewDriver() ystore.Driver {
 	return &Driver{}
 }
 
-func (jd *Driver) Load(store *ystore.Store, uri string) error {
-	jd.uri = uri
-	fileData, fileErr := ioutil.ReadFile(uri)
-	if fileErr != nil {
-		return fileErr
+func (jd *Driver) Load(store *ystore.Store, uris ...string) error {
+	jd.uris = uris
+	for _, uri := range uris {
+		fileData, fileErr := ioutil.ReadFile(uri)
+		if fileErr != nil {
+			return fileErr
+		}
+		var fileMap map[string]interface{}
+		jsonErr := json.Unmarshal(fileData, &fileMap)
+		if jsonErr != nil {
+			return jsonErr
+		}
+		// reset the store entries
+		store.Clear()
+		// add the map values
+		ystore.AddMapValues(store, store.Entries(), fileMap)
 	}
-	var fileMap map[string]interface{}
-	jsonErr := json.Unmarshal(fileData, &fileMap)
-	if jsonErr != nil {
-		return jsonErr
-	}
-	// reset the store entries
-	store.Clear()
-	// add the map values
-	ystore.AddMapValues(store, store.Entries(), fileMap)
 	return nil
 }
 
