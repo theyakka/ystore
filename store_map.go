@@ -10,7 +10,7 @@ func FromMap(mapValues map[string]any, options ...Option) *Store {
 	return store
 }
 
-func AddMapValues(store *Store, entries map[string]*Entry, mapValues map[string]any) {
+func AddMapValues(store *Store, entries EntriesMap, mapValues map[string]any) {
 	for k, v := range mapValues {
 		entry := &Entry{
 			store: store,
@@ -19,7 +19,7 @@ func AddMapValues(store *Store, entries map[string]*Entry, mapValues map[string]
 		switch v.(type) {
 		case map[string]any:
 			if store.HasFlag(ParseObjects) {
-				entry.children = map[string]*Entry{}
+				entry.children = EntriesMap{}
 				AddMapValues(store, entry.children, v.(map[string]any))
 			} else {
 				entry.value = reflect.ValueOf(v)

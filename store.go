@@ -16,20 +16,22 @@ const (
 	defaultCacheSize  = 50
 )
 
+type EntriesMap map[string]*Entry
+
 type Store struct {
 	driver      Driver
 	flags       Flag
-	entries     map[string]*Entry
+	entries     EntriesMap
 	enableCache bool
 	cacheLimit  int
-	cache       map[string]*Entry
+	cache       EntriesMap
 	mutex       sync.RWMutex
 }
 
 func NewStore(options ...Option) *Store {
 	store := &Store{
 		flags:       ParseObjects,
-		entries:     map[string]*Entry{},
+		entries:     EntriesMap{},
 		enableCache: defaultCacheState,
 		cacheLimit:  defaultCacheSize,
 	}
@@ -38,7 +40,7 @@ func NewStore(options ...Option) *Store {
 	}
 	if store.enableCache {
 		// only initialize the cache storage if we have enabled the cache
-		store.cache = map[string]*Entry{}
+		store.cache = EntriesMap{}
 	}
 	return store
 }
@@ -63,18 +65,23 @@ func (s *Store) HasFlag(flag Flag) bool {
 }
 
 func (s *Store) Clear() {
-	s.entries = map[string]*Entry{}
+	s.entries = EntriesMap{}
 }
 
 func (s *Store) Debug() {
 	printEntries(s.Entries())
 }
 
-func printEntries(entries map[string]*Entry) {
+func printEntries(entries EntriesMap) {
 	for _, e := range entries {
 		fmt.Println(e.Key(), "=", e.Value(), ":", e.Kind())
 		if e.children != nil {
 			printEntries(e.children)
 		}
 	}
+}
+
+type  interface {
+	Set(keyPath string, value any) error
+	setEntry(keyPath string, entry *Entry)
 }

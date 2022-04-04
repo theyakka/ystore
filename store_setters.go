@@ -9,7 +9,11 @@ func Set(store *Store, keyPath string, value any) error {
 	return setValue(store, store.entries, keyPath, value)
 }
 
-func setValue(store *Store, entries map[string]*Entry, keyPath string, value any) error {
+func (s *Store) Set(keyPath string, value any) error {
+	return Set(s, keyPath, value)
+}
+
+func setValue(store *Store, entries EntriesMap, keyPath string, value any) error {
 	// check if it's cached and, if so, set the value of the cached item
 	entry := store.Get(keyPath)
 	if entry != nil {
@@ -38,7 +42,7 @@ func setValue(store *Store, entries map[string]*Entry, keyPath string, value any
 	return nil
 }
 
-func findOrInsertEntry(store *Store, entries map[string]*Entry, pathSegments []string, value any) *Entry {
+func findOrInsertEntry(store *Store, entries EntriesMap, pathSegments []string, value any) *Entry {
 	entry := FindEntry(store, entries, pathSegments)
 	if entry != nil {
 		entry.value = reflect.ValueOf(value)
@@ -61,7 +65,7 @@ func findOrInsertEntry(store *Store, entries map[string]*Entry, pathSegments []s
 	}
 
 	if entry.children == nil {
-		entry.children = map[string]*Entry{}
+		entry.children = EntriesMap{}
 	}
 	return findOrInsertEntry(store, entry.children, pathSegments[1:], value)
 }

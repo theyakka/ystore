@@ -34,7 +34,7 @@ func (e *Entry) Kind() reflect.Kind {
 	return e.value.Kind()
 }
 
-func (e *Entry) IsValid() bool {
+func (e *Entry) HasValue() bool {
 	if e == nil || !e.value.IsValid() {
 		return false
 	}
@@ -67,7 +67,7 @@ func (e *Entry) Value() any {
 }
 
 func (e *Entry) ValueD(defaultValue any) any {
-	if !e.IsValid() {
+	if !e.HasValue() {
 		return defaultValue
 	}
 	return e.value

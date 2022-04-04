@@ -10,11 +10,8 @@ import (
 	"github.com/spf13/cast"
 	"github.com/theyakka/ystore"
 	"github.com/theyakka/ystore/drivers/json"
-<<<<<<< Updated upstream
 	"log"
-=======
 	"reflect"
->>>>>>> Stashed changes
 	"testing"
 )
 
@@ -51,7 +48,8 @@ func TestMerge(t *testing.T) {
 	s2 := ystore.NewStore()
 	ystore.Set(s2, "test.this", 99)
 	ystore.Set(s2, "test.that.thing", 100)
-	_ = ystore.Merge(s1, s2)
+	ms, _ := ystore.Merge([]*ystore.Store{s1, s2})
+	log.Println(ms)
 	log.Println("merged")
 }
 

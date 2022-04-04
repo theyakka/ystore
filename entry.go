@@ -13,5 +13,5 @@ type Entry struct {
 	key      string
 	value    reflect.Value
 	parent   *Entry
-	children map[string]*Entry
+	children EntriesMap
 }
