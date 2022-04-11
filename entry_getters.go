@@ -34,6 +34,10 @@ func (e *Entry) Kind() reflect.Kind {
 	return e.value.Kind()
 }
 
+func (e *Entry) HasChildren() bool {
+	return len(e.children) > 0
+}
+
 func (e *Entry) HasValue() bool {
 	if e == nil || !e.value.IsValid() {
 		return false

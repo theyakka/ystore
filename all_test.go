@@ -49,6 +49,7 @@ func TestMerge(t *testing.T) {
 	ystore.Set(s2, "test.this", 99)
 	ystore.Set(s2, "test.that.thing", 100)
 	ms, _ := ystore.Merge([]*ystore.Store{s1, s2})
+	log.Println(ms.Get("test.this").Value())
 	log.Println(ms)
 	log.Println("merged")
 }

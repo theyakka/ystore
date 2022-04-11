@@ -81,7 +81,10 @@ func printEntries(entries EntriesMap) {
 	}
 }
 
-type  interface {
+type Mutable interface {
 	Set(keyPath string, value any) error
-	setEntry(keyPath string, entry *Entry)
+}
+
+type Readable interface {
+	Get(keyPath string) Readable
 }

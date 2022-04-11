@@ -29,9 +29,8 @@ func mergeEntries(store *Store, entries EntriesMap, parent *Entry) error {
 		return nil
 	}
 	for k, e := range entries {
-		var dest Storeable
-		entry := store.Get(k)
-		dest = store
+		var dest Mutable = store
+		entry := store.Get(e.KeyPath())
 		if parent != nil {
 			entry = parent.Get(k)
 			dest = parent
@@ -46,6 +45,10 @@ func mergeEntries(store *Store, entries EntriesMap, parent *Entry) error {
 		}
 		if e.HasValue() {
 			entry.value = e.value
+		}
+		_ = dest.Set(k, e)
+		if e.HasChildren() {
+			_ = mergeEntries(store, e.children, entry)
 		}
 	}
 	return nil

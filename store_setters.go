@@ -32,7 +32,7 @@ func setValue(store *Store, entries EntriesMap, keyPath string, value any) error
 		return nil
 	}
 	// find the entry (as it is not cached) or create it as we search for it
-	_ = findOrInsertEntry(store, entries, segments, value)
+	_ = findOrInsertEntry(store, entries, segments, value, nil)
 	// check to see if a driver has been assigned to the store, that the driver has
 	// parameters set and if the driver supports auto persistence. If so, we should
 	// persist the data here.
@@ -42,7 +42,7 @@ func setValue(store *Store, entries EntriesMap, keyPath string, value any) error
 	return nil
 }
 
-func findOrInsertEntry(store *Store, entries EntriesMap, pathSegments []string, value any) *Entry {
+func findOrInsertEntry(store *Store, entries EntriesMap, pathSegments []string, value any, parent *Entry) *Entry {
 	entry := FindEntry(store, entries, pathSegments)
 	if entry != nil {
 		entry.value = reflect.ValueOf(value)
@@ -52,9 +52,10 @@ func findOrInsertEntry(store *Store, entries EntriesMap, pathSegments []string, 
 	entry = entries[segment]
 	if entry == nil {
 		entry = &Entry{
-			store: store,
-			key:   segment,
-			value: reflect.ValueOf(value),
+			store:  store,
+			key:    segment,
+			value:  reflect.ValueOf(value),
+			parent: parent,
 		}
 		entries[segment] = entry
 	}
@@ -67,5 +68,5 @@ func findOrInsertEntry(store *Store, entries EntriesMap, pathSegments []string, 
 	if entry.children == nil {
 		entry.children = EntriesMap{}
 	}
-	return findOrInsertEntry(store, entry.children, pathSegments[1:], value)
+	return findOrInsertEntry(store, entry.children, pathSegments[1:], value, entry)
 }
