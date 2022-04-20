@@ -49,11 +49,17 @@ func TestMerge(t *testing.T) {
 	s2 := ystore.NewStore()
 	ystore.Set(s2, "test.this", 99)
 	ystore.Set(s2, "test.that.thing", 100)
-	ms, _ := ystore.Merge([]*ystore.Store{s1, s2})
+	s3 := ystore.NewStore()
+	ystore.Set(s3, "test.that.thing", "200")
+	ystore.Set(s3, "test.that.thing.again", "monkey")
+	ystore.Set(s3, "test.another", "turnip")
+
+	ms, _ := ystore.Merge([]*ystore.Store{s1, s2, s3})
 	log.Println("ms", "test.this", ms.Get("test.this").Value())
 	log.Println("ms", "test.that", ms.Get("test.that").Value())
 	log.Println("ms", "test.that.thing", ms.Get("test.that.thing").Value())
-
+	log.Println("ms", "test.that.thing.again", ms.Get("test.that.thing.again").Value())
+	log.Println("ms", "test.another", ms.Get("test.another").Value())
 }
 
 func TestSimpleGet(t *testing.T) {
