@@ -16,18 +16,16 @@ func AddMapValues(store *Store, entries EntriesMap, mapValues map[string]any) {
 			store: store,
 			key:   k,
 		}
-		switch v.(type) {
+		switch converted := v.(type) {
 		case map[string]any:
 			if store.HasFlag(ParseObjects) {
 				entry.children = EntriesMap{}
-				AddMapValues(store, entry.children, v.(map[string]any))
+				AddMapValues(store, entry.children, converted)
 			} else {
 				entry.value = reflect.ValueOf(v)
 			}
-			break
 		case []any:
 			entry.value = reflect.ValueOf(v)
-			break
 		default:
 			entry.value = reflect.ValueOf(v)
 		}
