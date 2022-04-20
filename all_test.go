@@ -7,12 +7,13 @@
 package ystore_test
 
 import (
-	"github.com/spf13/cast"
-	"github.com/theyakka/ystore"
-	"github.com/theyakka/ystore/drivers/json"
 	"log"
 	"reflect"
 	"testing"
+
+	"github.com/spf13/cast"
+	"github.com/theyakka/ystore"
+	"github.com/theyakka/ystore/drivers/json"
 )
 
 func exampleStore() *ystore.Store {
@@ -49,9 +50,10 @@ func TestMerge(t *testing.T) {
 	ystore.Set(s2, "test.this", 99)
 	ystore.Set(s2, "test.that.thing", 100)
 	ms, _ := ystore.Merge([]*ystore.Store{s1, s2})
-	log.Println(ms.Get("test.this").Value())
-	log.Println(ms)
-	log.Println("merged")
+	log.Println("ms", "test.this", ms.Get("test.this").Value())
+	log.Println("ms", "test.that", ms.Get("test.that").Value())
+	log.Println("ms", "test.that.thing", ms.Get("test.that.thing").Value())
+
 }
 
 func TestSimpleGet(t *testing.T) {

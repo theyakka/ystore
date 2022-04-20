@@ -43,7 +43,7 @@ func setValue(store *Store, entries EntriesMap, keyPath string, value any) error
 }
 
 func findOrInsertEntry(store *Store, entries EntriesMap, pathSegments []string, value any, parent *Entry) *Entry {
-	entry := FindEntry(store, entries, pathSegments)
+	entry := FindEntry(entries, pathSegments)
 	if entry != nil {
 		entry.value = reflect.ValueOf(value)
 	}
@@ -54,7 +54,6 @@ func findOrInsertEntry(store *Store, entries EntriesMap, pathSegments []string, 
 		entry = &Entry{
 			store:  store,
 			key:    segment,
-			value:  reflect.ValueOf(value),
 			parent: parent,
 		}
 		entries[segment] = entry

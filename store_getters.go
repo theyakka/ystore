@@ -10,7 +10,7 @@ func (s *Store) Entries() EntriesMap {
 
 func (s *Store) Has(keyPath string) bool {
 	s.mutex.RLock()
-	entry := FindEntry(s, s.entries, strings.Split(keyPath, "."))
+	entry := FindEntry(s.entries, strings.Split(keyPath, "."))
 	s.mutex.RUnlock()
 	return entry != nil
 }
@@ -22,7 +22,7 @@ func Get(store *Store, keyPath string) *Entry {
 		store.mutex.RUnlock()
 		return entry
 	}
-	entry = FindEntry(store, store.entries, strings.Split(keyPath, "."))
+	entry = FindEntry(store.entries, strings.Split(keyPath, "."))
 	if store.enableCache && entry != nil {
 		store.cache[keyPath] = entry
 	}
@@ -34,12 +34,13 @@ func (s *Store) Get(keyPath string) *Entry {
 	return Get(s, keyPath)
 }
 
-func FindEntry(store *Store, entries EntriesMap, pathSegments []string) *Entry {
+func FindEntry(entries EntriesMap, pathSegments []string) *Entry {
 	segment := pathSegments[0]
 	segmentCount := len(pathSegments)
+
 	entry := entries[segment]
 	if entry == nil || segmentCount == 1 {
 		return entry
 	}
-	return FindEntry(store, entry.children, pathSegments[1:])
+	return FindEntry(entry.children, pathSegments[1:])
 }

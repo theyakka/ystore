@@ -7,7 +7,7 @@ import (
 
 func (e *Entry) Has(keyPath string) bool {
 	e.store.mutex.RLock()
-	entry := FindEntry(e.store, e.children, strings.Split(keyPath, "."))
+	entry := FindEntry(e.children, strings.Split(keyPath, "."))
 	e.store.mutex.RUnlock()
 	return entry != nil
 }
@@ -20,7 +20,7 @@ func (e *Entry) KeyPath() string {
 	var segments []string
 	current := e
 	for current != nil {
-		segments = append(segments, current.key)
+		segments = append([]string{current.key}, segments...)
 		current = current.parent
 	}
 	return strings.Join(segments, ".")
@@ -53,12 +53,12 @@ func (e *Entry) HasValue() bool {
 
 func (e *Entry) Get(keyPath string) *Entry {
 	e.store.mutex.RLock()
-	entry := e.store.cache[e.KeyPath()]
+	entry := e.store.cache[keyPath]
 	if entry != nil {
 		e.store.mutex.RUnlock()
 		return entry
 	}
-	entry = FindEntry(e.store, e.children, strings.Split(keyPath, "."))
+	entry = FindEntry(e.children, strings.Split(keyPath, "."))
 	e.store.mutex.RUnlock()
 	return entry
 }
