@@ -19,7 +19,6 @@ const (
 type EntriesMap map[string]*Entry
 
 type Store struct {
-	driver      Driver
 	flags       Flag
 	entries     EntriesMap
 	enableCache bool
@@ -43,21 +42,6 @@ func NewStore(options ...Option) *Store {
 		store.cache = EntriesMap{}
 	}
 	return store
-}
-
-func (s *Store) SetDriver(driver Driver) {
-	s.driver = driver
-}
-
-func (s *Store) Load(uris ...string) error {
-	return s.driver.Load(s, uris...)
-}
-
-func (s *Store) Persist() error {
-	if s.driver == nil {
-		return nil
-	}
-	return s.driver.Persist()
 }
 
 func (s *Store) HasFlag(flag Flag) bool {
